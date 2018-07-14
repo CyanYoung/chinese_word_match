@@ -58,17 +58,19 @@ def predict(text):
     if match_texts:
         for match_text in match_texts:
             edits.append(distance(text, match_text))
+        min_dis = min(edits)
         min_ind = np.argmin(np.array(edits))
-        if min_ind > 1:
-            return None
         if __name__ == '__main__':
             print(text)
             print(match_texts)
             print(edits)
             print(match_texts[int(min_ind)])
-        return match_labels[int(min_ind)]
+        if min_dis > 1:
+            return '其它'
+        else:
+            return match_labels[int(min_ind)]
     else:
-        return None
+        return '其它'
 
 
 if __name__ == '__main__':
