@@ -1,18 +1,17 @@
 import os
 
-import jieba
+import re
 
-from util import load_word, filter_word
+from util import load_word, list2re
 
 
 path_train_dir = 'data/train'
 path_test_dir = 'data/test'
-path_special_word = 'dict/special_word.txt'
 path_stop_word = 'dict/stop_word.txt'
 train_files = os.listdir(path_train_dir)
 test_files = os.listdir(path_test_dir)
-jieba.load_userdict(path_special_word)
 stop_words = load_word(path_stop_word)
+word_re = list2re(stop_words)
 
 
 def save_file(path, texts, labels):
@@ -34,12 +33,10 @@ def prepare(path_train_file, path_test_file):
         label = os.path.splitext(train_file)[0]
         with open(os.path.join(path_train_dir, train_file), 'r') as f:
             for line in f:
-                words = jieba.cut(line.strip())
-                valid_words = filter_word(words, stop_words)
-                cut_text = ' '.join(valid_words)
-                if cut_text not in train_set:
-                    train_set.add(cut_text)
-                    train_texts.append(cut_text)
+                text = re.sub(word_re, '', line.strip())
+                if text not in train_set:
+                    train_set.add(text)
+                    train_texts.append(text)
                     train_labels.append(label)
     save_file(path_train_file, train_texts, train_labels)
     for test_file in test_files:
@@ -47,7 +44,7 @@ def prepare(path_train_file, path_test_file):
         with open(os.path.join(path_test_dir, test_file), 'r') as f:
             for line in f:
                 text = line.strip()
-                if line.strip() not in test_set:
+                if text not in test_set:
                     test_set.add(text)
                     test_texts.append(text)
                     test_labels.append(label)

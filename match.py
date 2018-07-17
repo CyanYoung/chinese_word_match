@@ -1,29 +1,27 @@
 import pandas as pd
 import pickle as pk
 
-import jieba
+import re
 
 import numpy as np
 
-from Levenshtein import distance
+from pypinyin import lazy_pinyin as pinyin
 
-from util import load_word, load_pair, filter_word
+from Levenshtein import distance as edit_dist
+
+from util import load_word, load_pair, list2re
 
 
 path_train = 'data/train.csv'
-path_special_word = 'dict/special_word.txt'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
-path_phon = 'dict/word2phon.pkl'
 path_link = 'dict/class2word.pkl'
 texts = pd.read_csv(path_train, usecols=[0]).values
-jieba.load_userdict(path_special_word)
 stop_words = load_word(path_stop_word)
+word_re = list2re(stop_words)
 homo_dict = load_pair(path_homo)
 syno_dict = load_pair(path_syno)
-with open(path_phon, 'rb') as f:
-    word2phon = pk.load(f)
 with open(path_link, 'rb') as f:
     class2word = pk.load(f)
 
@@ -34,41 +32,59 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
+def select(text, match_texts):
+    dists = list()
+    for match_text in match_texts:
+        dists.append(edit_dist(text, match_text))
+    min_dist = min(dists)
+    min_ind = np.argmin(np.array(dists))
+    min_rate = min_dist / len(text)
+    if __name__ == '__main__':
+        print(text)
+        print(match_texts)
+        print(dists)
+        print('%s %.2f' % (match_texts[int(min_ind)], min_rate))
+    return min_dist, min_ind, min_rate
+
+
 def predict(text):
-    words = jieba.cut(text)
-    valid_words = filter_word(words, stop_words)
-    text = ''.join(valid_words)
+    text = re.sub(word_re, '', text)
+    phon = ''.join(pinyin(text))
     match_inds = set()
     match_texts = list()
+    match_phons = list()
     match_labels = list()
-    for valid_word in valid_words:
+    for word in text:
         cands = set()
-        cands.add(valid_word)
-        find(valid_word, cands, homo_dict)
-        find(valid_word, cands, syno_dict)
+        cands.add(word)
+        find(word, cands, homo_dict)
+        find(word, cands, syno_dict)
         for label in class2word.keys():
             for cand in cands:
                 if cand in class2word[label]:
                     for ind in class2word[label][cand]:
                         if ind not in match_inds:
                             match_inds.add(ind)
-                            match_texts.append(texts[ind][0].replace(' ', ''))
+                            match_texts.append(texts[ind][0])
+                            match_phons.append(''.join(pinyin(texts[ind][0])))
                             match_labels.append(label)
-    edits = list()
     if match_texts:
-        for match_text in match_texts:
-            edits.append(distance(text, match_text))
-        min_dis = min(edits)
-        min_ind = np.argmin(np.array(edits))
-        if __name__ == '__main__':
-            print(text)
-            print(match_texts)
-            print(edits)
-            print(match_texts[int(min_ind)])
-        if min_dis > 1:
-            return '其它'
+        text_dist, text_ind, text_rate = select(text, match_texts)
+        phon_dist, phon_ind, phon_rate = select(phon, match_phons)
+        text_pred = match_labels[int(text_ind)]
+        phon_pred = match_labels[int(phon_ind)]
+        if text_pred == phon_pred:
+            if text_rate < 0.5 or phon_rate < 0.5:
+                return text_pred
+            else:
+                return '其它'
         else:
-            return match_labels[int(min_ind)]
+            if text_rate < phon_rate and text_rate < 0.5:
+                return text_pred
+            elif phon_rate < text_rate and phon_rate < 0.5:
+                return phon_pred
+            else:
+                return '其它'
     else:
         return '其它'
 

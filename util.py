@@ -9,12 +9,11 @@ def load_word(path):
     return words
 
 
-def filter_word(words, stop_words):
-    valid_words = list()
+def list2re(words):
+    word_re = '['
     for word in words:
-        if word not in stop_words:
-            valid_words.append(word)
-    return valid_words
+        word_re = word_re + '(' + word + ')'
+    return word_re + ']'
 
 
 def load_pair(path):
