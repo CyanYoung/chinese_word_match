@@ -16,14 +16,20 @@ path_train = 'data/train.csv'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
-path_link = 'dict/class2word.pkl'
+path_class2word = 'dict/class2word.pkl'
+path_tfidf = 'model/tfidf.pkl'
+path_class2doc = 'dict/class2doc.pkl'
 texts = pd.read_csv(path_train, usecols=[0]).values
 stop_words = load_word(path_stop_word)
 word_re = list2re(stop_words)
 homo_dict = load_pair(path_homo)
 syno_dict = load_pair(path_syno)
-with open(path_link, 'rb') as f:
+with open(path_class2word, 'rb') as f:
     class2word = pk.load(f)
+with open(path_tfidf, 'rb') as f:
+    tfidf = pk.load(f)
+with open(path_class2doc, 'rb') as f:
+    class2doc = pk.load(f)
 
 
 def find(word, cands, word_dict):
@@ -32,26 +38,24 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def select(text, match_texts):
+def select(phon, match_phons):
     dists = list()
-    for match_text in match_texts:
-        dists.append(edit_dist(text, match_text))
+    for match_phon in match_phons:
+        dists.append(edit_dist(phon, match_phon))
     min_dist = min(dists)
     min_ind = np.argmin(np.array(dists))
-    min_rate = min_dist / len(text)
+    min_rate = min_dist / len(phon)
     if __name__ == '__main__':
-        print(text)
-        print(match_texts)
+        print(phon)
+        print(match_phons)
         print(dists)
-        print('%s %.2f' % (match_texts[int(min_ind)], min_rate))
+        print('%s %.2f' % (match_phons[int(min_ind)], min_rate))
     return min_dist, min_ind, min_rate
 
 
-def predict(text):
-    text = re.sub(word_re, '', text)
+def edit_predict(text):
     phon = ''.join(pinyin(text))
     match_inds = set()
-    match_texts = list()
     match_phons = list()
     match_labels = list()
     for word in text:
@@ -65,31 +69,52 @@ def predict(text):
                     for ind in class2word[label][cand]:
                         if ind not in match_inds:
                             match_inds.add(ind)
-                            match_texts.append(texts[ind][0])
                             match_phons.append(''.join(pinyin(texts[ind][0])))
                             match_labels.append(label)
-    if match_texts:
-        text_dist, text_ind, text_rate = select(text, match_texts)
-        phon_dist, phon_ind, phon_rate = select(phon, match_phons)
-        text_pred = match_labels[int(text_ind)]
-        phon_pred = match_labels[int(phon_ind)]
-        if text_pred == phon_pred:
-            if text_rate < 0.5 or phon_rate < 0.5:
-                return text_pred
-            else:
-                return '其它'
+    if match_phons:
+        min_dist, min_ind, min_rate = select(phon, match_phons)
+        if min_rate < 0.5:
+            return match_labels[int(min_ind)]
         else:
-            if text_rate < phon_rate and text_rate < 0.5:
-                return text_pred
-            elif phon_rate < text_rate and phon_rate < 0.5:
-                return phon_pred
-            else:
-                return '其它'
+            return '其它'
     else:
         return '其它'
+
+
+def cos_sim(vec1, vec2):
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+
+
+def cos_predict(text):
+    text_vec = tfidf.transform([text]).toarray()
+    sims = list()
+    labels = list()
+    for label in class2doc.keys():
+        sims.append(cos_sim(text_vec, class2doc[label])[0])
+        labels.append(label)
+    max_sim = max(sims)
+    max_ind = np.argmax(np.array(sims))
+    if __name__ == '__main__':
+        print(text)
+        print(sims)
+    if max_sim > 0.2:
+        return labels[int(max_ind)]
+    else:
+        return '其它'
+
+
+def predict(text, metric):
+    text = re.sub(word_re, '', text)
+    if metric == 'edit_dist':
+        return edit_predict(text)
+    elif metric == 'cos_sim':
+        return cos_predict(text)
+    else:
+        raise KeyError
 
 
 if __name__ == '__main__':
     while True:
         text = input('text: ')
-        print('pred: %s' % predict(text))
+        print('edit_pred: %s' % predict(text, 'edit_dist'))
+        print('cos_pred: %s' % predict(text, 'cos_sim'))

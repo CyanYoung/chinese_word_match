@@ -22,7 +22,7 @@ def save_file(path, texts, labels):
             f.write(text + ',' + label + '\n')
 
 
-def prepare(path_train_file, path_test_file):
+def prepare(path_train, path_test):
     train_set = set()
     train_texts = list()
     train_labels = list()
@@ -38,7 +38,7 @@ def prepare(path_train_file, path_test_file):
                     train_set.add(text)
                     train_texts.append(text)
                     train_labels.append(label)
-    save_file(path_train_file, train_texts, train_labels)
+    save_file(path_train, train_texts, train_labels)
     for test_file in test_files:
         label = os.path.splitext(test_file)[0]
         with open(os.path.join(path_test_dir, test_file), 'r') as f:
@@ -48,10 +48,10 @@ def prepare(path_train_file, path_test_file):
                     test_set.add(text)
                     test_texts.append(text)
                     test_labels.append(label)
-    save_file(path_test_file, test_texts, test_labels)
+    save_file(path_test, test_texts, test_labels)
 
 
 if __name__ == '__main__':
-    path_train_file = 'data/train.csv'
-    path_test_file = 'data/test.csv'
-    prepare(path_train_file, path_test_file)
+    path_train = 'data/train.csv'
+    path_test = 'data/test.csv'
+    prepare(path_train, path_test)
