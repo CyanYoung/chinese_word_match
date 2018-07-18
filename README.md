@@ -1,2 +1,2 @@
-## Syntactic Index 2018-7
+## Syntactic Match 2018-7
 
