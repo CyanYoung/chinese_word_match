@@ -2,6 +2,7 @@ import pandas as pd
 import pickle as pk
 
 import re
+import jieba
 
 import numpy as np
 
@@ -14,6 +15,7 @@ from util import load_word, load_pair, list2re
 
 path_train = 'data/train.csv'
 path_stop_word = 'dict/stop_word.txt'
+path_special_word = 'dict/special_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
 path_class2word = 'dict/class2word.pkl'
@@ -22,6 +24,7 @@ path_class2doc = 'dict/class2doc.pkl'
 texts = pd.read_csv(path_train, usecols=[0]).values
 stop_words = load_word(path_stop_word)
 word_re = list2re(stop_words)
+jieba.load_userdict(path_special_word)
 homo_dict = load_pair(path_homo)
 syno_dict = load_pair(path_syno)
 with open(path_class2word, 'rb') as f:
@@ -73,7 +76,7 @@ def edit_predict(text):
                             match_labels.append(label)
     if match_phons:
         min_dist, min_ind, min_rate = select(phon, match_phons)
-        if min_rate < 0.5:
+        if min_rate < 0.3:
             return match_labels[int(min_ind)]
         else:
             return '其它'
@@ -85,8 +88,8 @@ def cos_sim(vec1, vec2):
     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
 
-def cos_predict(text):
-    text_vec = tfidf.transform([text]).toarray()
+def cos_predict(cut_text):
+    text_vec = tfidf.transform([cut_text]).toarray()
     sims = list()
     labels = list()
     for label in class2doc.keys():
@@ -95,9 +98,9 @@ def cos_predict(text):
     max_sim = max(sims)
     max_ind = np.argmax(np.array(sims))
     if __name__ == '__main__':
-        print(text)
+        print(cut_text)
         print(sims)
-    if max_sim > 0.2:
+    if max_sim > 0.1:
         return labels[int(max_ind)]
     else:
         return '其它'
@@ -108,7 +111,8 @@ def predict(text, metric):
     if metric == 'edit_dist':
         return edit_predict(text)
     elif metric == 'cos_sim':
-        return cos_predict(text)
+        cut_text = ' '.join(jieba.cut(text))
+        return cos_predict(cut_text)
     else:
         raise KeyError
 

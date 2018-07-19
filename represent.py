@@ -4,7 +4,7 @@ import pickle as pk
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-def edit_fit(path_train, path_class2word):
+def edit_fit(path_train, path_class2word):  # char
     class2word = dict()
     text_ind = 0
     for text, label in pd.read_csv(path_train).values:
@@ -21,18 +21,18 @@ def edit_fit(path_train, path_class2word):
         print(class2word)
 
 
-def cos_fit(path_train, path_tfidf, path_class2doc):
+def cos_fit(path_train_cut, path_tfidf, path_class2doc):  # word
     class2doc = dict()
     docs = list()
     labels = list()
-    for text, label in pd.read_csv(path_train).values:
+    for text, label in pd.read_csv(path_train_cut).values:
         if label not in class2doc:
             class2doc[label] = ''
-        class2doc[label] = class2doc[label] + text
+        class2doc[label] = class2doc[label] + ' ' + text
     for label in class2doc.keys():
         docs.append(class2doc[label])
         labels.append(label)
-    tfidf = TfidfVectorizer(token_pattern='\w', min_df=1)
+    tfidf = TfidfVectorizer(token_pattern='\w+', min_df=1)
     tfidf.fit(docs)
     feature = tfidf.transform(docs).toarray()
     if __name__ == '__main__':
@@ -45,14 +45,16 @@ def cos_fit(path_train, path_tfidf, path_class2doc):
         pk.dump(class2doc, f)
 
 
-def fit(path_train, path_class2word, path_tfidf, path_class2doc):
+def fit(path_train, path_train_cut, path_class2word, path_tfidf, path_class2doc):
     edit_fit(path_train, path_class2word)
-    cos_fit(path_train, path_tfidf, path_class2doc)
+    cos_fit(path_train_cut, path_tfidf, path_class2doc)
 
 
 if __name__ == '__main__':
     path_train = 'data/train.csv'
+    path_train_cut = 'data/train_cut.csv'
     path_class2word = 'dict/class2word.pkl'
     path_tfidf = 'model/tfidf.pkl'
     path_class2doc = 'dict/class2doc.pkl'
-    fit(path_train, path_class2word, path_tfidf, path_class2doc)
+    fit(path_train, path_train_cut, path_class2word, path_tfidf, path_class2doc)
+    path_train = 'data/train_cut.csv'
