@@ -53,7 +53,7 @@ def edit_predict(text, match_inds, match_labels):
         print(match_phons)
         print(dists)
         print(match_phons[int(min_ind)], min_rate)
-    if min_rate < 0.3:
+    if min_rate < 0.5:
         return match_labels[int(min_ind)]
     else:
         return '其它'
@@ -113,7 +113,6 @@ def predict(text, metric):
             return edit_predict(text, match_inds, match_labels)
         elif metric == 'cos_sim':
             return cos_predict(text, match_inds, match_labels)
-
     else:
         return '其它'
 
