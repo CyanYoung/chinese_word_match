@@ -48,11 +48,11 @@ def edit_predict(text, match_inds, match_labels):
         dists.append(edit_dist(phon, match_phon))
     min_dist = min(dists)
     min_ind = np.argmin(np.array(dists))
-    min_rate = min_dist / len(phon)
+    min_rate = round(min_dist / len(phon), 2)
     if __name__ == '__main__':
         print(match_phons)
         print(dists)
-        print('%s %.2f' % (match_phons[int(min_ind)], min_rate))
+        print(match_phons[int(min_ind)], min_rate)
     if min_rate < 0.3:
         return match_labels[int(min_ind)]
     else:
@@ -62,7 +62,7 @@ def edit_predict(text, match_inds, match_labels):
 def cos_sim(vec1, vec2):
     deno = np.linalg.norm(vec1) * np.linalg.norm(vec2)
     if deno:
-        return (np.dot(vec1, vec2) / deno)[0]
+        return round((np.dot(vec1, vec2) / deno)[0], 2)
     else:
         return 0.0
 
@@ -83,7 +83,7 @@ def cos_predict(text, match_inds, match_labels):
     if __name__ == '__main__':
         print(match_texts)
         print(sims)
-        print('%s %.2f' % (match_texts[int(max_ind)], max_sim))
+        print(match_texts[int(max_ind)], max_sim)
     if max_sim > 0.5:
         return match_labels[int(max_ind)]
     else:
