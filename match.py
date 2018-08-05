@@ -1,18 +1,17 @@
 import pandas as pd
 import pickle as pk
 
-import re
-
 import numpy as np
 
 from pypinyin import lazy_pinyin as pinyin
 
 from Levenshtein import distance as edit_dist
 
-from util import load_word, load_pair, list2re
+from util import load_word_re, load_type_re, replace, load_pair
 
 
 path_train = 'data/train.csv'
+path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
@@ -20,8 +19,8 @@ path_class2word = 'dict/class2word.pkl'
 path_tfidf = 'model/tfidf.pkl'
 path_ind2vec = 'dict/ind2vec.pkl'
 texts = pd.read_csv(path_train, usecols=[0]).values
-stop_words = load_word(path_stop_word)
-word_re = list2re(stop_words)
+word_type_re = load_type_re(path_type_dir)
+stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_pair(path_homo)
 syno_dict = load_pair(path_syno)
 with open(path_class2word, 'rb') as f:
@@ -50,6 +49,7 @@ def edit_predict(text, match_inds, match_labels):
     min_ind = np.argmin(np.array(dists))
     min_rate = round(min_dist / len(phon), 2)
     if __name__ == '__main__':
+        print(phon)
         print(match_phons)
         print(dists)
         print(match_phons[int(min_ind)], min_rate)
@@ -69,8 +69,8 @@ def cos_sim(vec1, vec2):
 
 def cos_predict(text, match_inds, match_labels):
     vec = dict()
-    for label in tfidf.keys():
-        vec[label] = tfidf[label].transform([text]).toarray()
+    for label, model in tfidf.items():
+        vec[label] = model.transform([text]).toarray()
     match_texts = list()
     for match_ind in match_inds:
         match_texts.append(texts[match_ind][0])
@@ -81,6 +81,7 @@ def cos_predict(text, match_inds, match_labels):
     max_sim = max(sims)
     max_ind = np.argmax(np.array(sims))
     if __name__ == '__main__':
+        print(text)
         print(match_texts)
         print(sims)
         print(match_texts[int(max_ind)], max_sim)
@@ -91,8 +92,8 @@ def cos_predict(text, match_inds, match_labels):
 
 
 def predict(text, metric):
-    text = re.sub(word_re, '', text)
-    match_set = set()
+    text = replace(text.strip(), word_type_re, stop_word_re)
+    ind_set = set()
     match_inds = list()
     match_labels = list()
     for word in text:
@@ -100,12 +101,12 @@ def predict(text, metric):
         cands.add(word)
         find(word, cands, homo_dict)
         find(word, cands, syno_dict)
-        for label in class2word.keys():
+        for label, words in class2word.items():
             for cand in cands:
-                if cand in class2word[label]:
-                    for ind in class2word[label][cand]:
-                        if ind not in match_set:
-                            match_set.add(ind)
+                if cand in words:
+                    for ind in words[cand]:
+                        if ind not in ind_set:
+                            ind_set.add(ind)
                             match_inds.append(ind)
                             match_labels.append(label)
     if match_inds:

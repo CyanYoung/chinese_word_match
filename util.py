@@ -1,3 +1,7 @@
+import os
+
+import re
+
 import pandas as pd
 
 
@@ -9,11 +13,18 @@ def load_word(path):
     return words
 
 
-def list2re(words):
-    word_re = '['
-    for word in words:
-        word_re = word_re + '(' + word + ')'
-    return word_re + ']'
+def load_word_re(path):
+    words = load_word(path)
+    return '(' + ')|('.join(words) + ')'
+
+
+def load_type_re(path_dir):
+    word_type_re = dict()
+    files = os.listdir(path_dir)
+    for file in files:
+        word_type = os.path.splitext(file)[0]
+        word_type_re[word_type] = load_word_re(os.path.join(path_dir, file))
+    return word_type_re
 
 
 def load_pair(path):
@@ -26,3 +37,9 @@ def load_pair(path):
             vocab[word2] = set()
         vocab[word2].add(word1)
     return vocab
+
+
+def replace(text, word_type_re, stop_word_re):
+    for word_type, word_re in word_type_re.items():
+        text = re.sub(word_re, word_type, text)
+    return re.sub(stop_word_re, '', text)

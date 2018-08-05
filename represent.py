@@ -34,10 +34,10 @@ def vec_fit(path_train, path_tfidf, path_ind2vec):  # word
         ind = ind + 1
     tfidf = dict()
     ind2vec = dict()
-    for label in class2text.keys():
+    for label, texts in class2text.items():
         tfidf[label] = TfidfVectorizer(token_pattern='\w', min_df=1)
-        tfidf[label].fit(class2text[label])
-        vecs = tfidf[label].transform(class2text[label]).toarray()
+        tfidf[label].fit(texts)
+        vecs = tfidf[label].transform(texts).toarray()
         inds = class2ind[label]
         for ind, vec in zip(inds, vecs):
             ind2vec[ind] = vec
