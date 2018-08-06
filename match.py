@@ -42,16 +42,16 @@ def edit_predict(text, match_inds, match_labels):
     match_phons = list()
     for match_ind in match_inds:
         match_phons.append(''.join(pinyin(texts[match_ind][0])))
-    dists = list()
+    rates = list()
     for match_phon in match_phons:
-        dists.append(edit_dist(phon, match_phon))
-    min_dist = min(dists)
-    min_ind = np.argmin(np.array(dists))
-    min_rate = round(min_dist / len(phon), 2)
+        dist = edit_dist(phon, match_phon)
+        rates.append(round(dist / len(phon), 2))
+    min_rate = min(rates)
+    min_ind = np.argmin(np.array(rates))
     if __name__ == '__main__':
         print(phon)
         print(match_phons)
-        print(dists)
+        print(rates)
         print(match_phons[int(min_ind)], min_rate)
     if min_rate < 0.5:
         return match_labels[int(min_ind)]
