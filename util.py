@@ -27,6 +27,12 @@ def load_type_re(path_dir):
     return word_type_re
 
 
+def replace(text, word_type_re, stop_word_re):
+    for word_type, word_re in word_type_re.items():
+        text = re.sub(word_re, word_type, text)
+    return re.sub(stop_word_re, '', text)
+
+
 def load_pair(path):
     vocab = dict()
     for word1, word2 in pd.read_csv(path).values:
@@ -37,9 +43,3 @@ def load_pair(path):
             vocab[word2] = set()
         vocab[word2].add(word1)
     return vocab
-
-
-def replace(text, word_type_re, stop_word_re):
-    for word_type, word_re in word_type_re.items():
-        text = re.sub(word_re, word_type, text)
-    return re.sub(stop_word_re, '', text)
