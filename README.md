@@ -1,10 +1,10 @@
-## Syntactic Match 2018-7
+## Chinese Syntactic Match 2018-7
 
 #### 1.preprocess
 
 prepare() 将按类文件保存的训练、测试数据汇总并去重
 
-训练数据删除停用词，统一替换地区、时间等特殊词
+训练数据去除停用词，统一替换地区、时间等特殊词
 
 #### 2.represent
 
