@@ -1,19 +1,23 @@
 import pandas as pd
 
+from sklearn.metrics import accuracy_score
+
 from match import predict
 
 
 def test(path_test, metric):
+    labels = list()
+    preds = list()
     errors = list()
-    count = 0
     for text, label in pd.read_csv(path_test).values:
+        labels.append(label)
         pred = predict(text, metric)
+        preds.append(pred)
         if pred != label:
             errors.append((text, label, pred))
-        count = count + 1
-    print('%s %.2f\n' % ('acc:', (count - len(errors)) / count))
+    print('%s %.2f\n' % ('acc:', accuracy_score(labels, preds)))
     for text, label, pred in errors:
-        print('{}, {} -> {}'.format(text, label, pred))
+        print('{}: {} -> {}'.format(text, label, pred))
 
 
 if __name__ == '__main__':
