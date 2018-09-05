@@ -5,7 +5,7 @@ import numpy as np
 
 from pypinyin import lazy_pinyin as pinyin
 
-from Levenshtein import distance as edit_dist
+from nltk.metrics import edit_distance as edit_dist
 
 from util import load_word_re, load_type_re, replace, load_pair
 
@@ -18,7 +18,7 @@ path_syno = 'dict/synonym.csv'
 path_class2word = 'dict/class2word.pkl'
 path_tfidf = 'model/tfidf.pkl'
 path_ind2vec = 'dict/ind2vec.pkl'
-texts = pd.read_csv(path_train, usecols=[0]).values
+texts = pd.read_csv(path_train, usecols=['text']).values
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_pair(path_homo)
