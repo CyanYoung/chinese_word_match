@@ -2,13 +2,13 @@ import os
 
 import re
 
-from util import load_word_re, load_type_re, replace
+from util import load_word_re, load_type_re
 
 
-path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
-word_type_re = load_type_re(path_type_dir)
+path_type_dir = 'dict/word_type'
 stop_word_re = load_word_re(path_stop_word)
+word_type_re = load_type_re(path_type_dir)
 
 
 def save(path, texts, labels):
@@ -30,8 +30,9 @@ def prepare(path, path_dir, mode):
             for line in f:
                 text = line.strip()
                 if mode == 'train':
-                    text = replace(text, word_type_re)
                     text = re.sub(stop_word_re, '', text)
+                    for word_type, word_re in word_type_re.items():
+                        text = re.sub(word_re, word_type, text)
                 if text not in text_set:
                     text_set.add(text)
                     texts.append(text)

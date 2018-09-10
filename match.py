@@ -1,13 +1,15 @@
 import pandas as pd
 import pickle as pk
 
+import re
+
 import numpy as np
 
 from pypinyin import lazy_pinyin as pinyin
 
 from nltk.metrics import edit_distance as edit_dist
 
-from util import load_word_re, load_type_re, replace, load_pair
+from util import load_word_re, load_type_re, load_pair
 
 
 path_train = 'data/train.csv'
@@ -92,7 +94,9 @@ def cos_predict(text, match_inds, match_labels):
 
 
 def predict(text, metric):
-    text = replace(text.strip(), word_type_re, stop_word_re)
+    text = re.sub(stop_word_re, '', text)
+    for word_type, word_re in word_type_re.items():
+        text = re.sub(word_re, word_type, text)
     ind_set = set()
     match_inds = list()
     match_labels = list()
