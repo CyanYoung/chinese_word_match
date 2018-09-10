@@ -1,5 +1,7 @@
 import os
 
+import re
+
 from util import load_word_re, load_type_re, replace
 
 
@@ -28,7 +30,8 @@ def prepare(path, path_dir, mode):
             for line in f:
                 text = line.strip()
                 if mode == 'train':
-                    text = replace(text, word_type_re, stop_word_re)
+                    text = replace(text, word_type_re)
+                    text = re.sub(stop_word_re, '', text)
                 if text not in text_set:
                     text_set.add(text)
                     texts.append(text)
