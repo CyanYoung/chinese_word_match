@@ -1,4 +1,4 @@
-## Chinese Syntactic Match 2018-7
+## Chinese Response Match 2018-7
 
 #### 1.preprocess
 
