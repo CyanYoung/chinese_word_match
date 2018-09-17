@@ -19,7 +19,7 @@ def save(path, texts, labels):
             f.write(text + ',' + label + '\n')
 
 
-def prepare(path, path_dir, mode):
+def prepare(path, path_dir):
     text_set = set()
     texts = list()
     labels = list()
@@ -29,10 +29,9 @@ def prepare(path, path_dir, mode):
         with open(os.path.join(path_dir, file), 'r') as f:
             for line in f:
                 text = line.strip()
-                if mode == 'train':
-                    text = re.sub(stop_word_re, '', text)
-                    for word_type, word_re in word_type_re.items():
-                        text = re.sub(word_re, word_type, text)
+                text = re.sub(stop_word_re, '', text)
+                for word_type, word_re in word_type_re.items():
+                    text = re.sub(word_re, word_type, text)
                 if text not in text_set:
                     text_set.add(text)
                     texts.append(text)
@@ -41,9 +40,9 @@ def prepare(path, path_dir, mode):
 
 
 if __name__ == '__main__':
-    path_train = 'data/train.csv'
-    path_train_dir = 'data/train'
-    path_test = 'data/test.csv'
-    path_test_dir = 'data/test'
-    prepare(path_train, path_train_dir, 'train')
-    prepare(path_test, path_test_dir, 'test')
+    path = 'data/train.csv'
+    path_dir = 'data/train'
+    prepare(path, path_dir)
+    path = 'data/test.csv'
+    path_dir = 'data/test'
+    prepare(path, path_dir)

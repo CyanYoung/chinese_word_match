@@ -5,11 +5,11 @@ from sklearn.metrics import accuracy_score
 from match import predict
 
 
-def test(path_test, metric):
+def test(path, metric):
     labels = list()
     preds = list()
     errors = list()
-    for text, label in pd.read_csv(path_test).values:
+    for text, label in pd.read_csv(path).values:
         labels.append(label)
         pred = predict(text, metric)
         preds.append(pred)
@@ -21,6 +21,6 @@ def test(path_test, metric):
 
 
 if __name__ == '__main__':
-    path_test = 'data/test.csv'
-    test(path_test, 'edit_dist')
-    test(path_test, 'cos_sim')
+    path = 'data/test.csv'
+    test(path, 'edit_dist')
+    test(path, 'cos_sim')
