@@ -4,6 +4,9 @@ import pickle as pk
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
+min_freq = 1
+
+
 def link_fit(path_train, path_class2word):
     class2word = dict()
     ind = 0
@@ -35,7 +38,7 @@ def freq_fit(path_train, path_tfidf, path_ind2vec):
     tfidf = dict()
     ind2vec = dict()
     for label, texts in class2text.items():
-        tfidf[label] = TfidfVectorizer(token_pattern='\w', min_df=1)
+        tfidf[label] = TfidfVectorizer(token_pattern='\w', min_df=min_freq)
         tfidf[label].fit(texts)
         vecs = tfidf[label].transform(texts).toarray()
         inds = class2ind[label]
