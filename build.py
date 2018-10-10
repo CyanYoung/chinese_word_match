@@ -21,7 +21,7 @@ def link_fit(path_train, path_class2word):
         print(class2word)
 
 
-def vec_fit(path_train, path_tfidf, path_ind2vec):
+def freq_fit(path_train, path_tfidf, path_ind2vec):
     class2text = dict()
     class2ind = dict()
     ind = 0
@@ -51,7 +51,7 @@ def vec_fit(path_train, path_tfidf, path_ind2vec):
 
 def fit(path_train, path_class2word, path_tfidf, path_ind2vec):
     link_fit(path_train, path_class2word)
-    vec_fit(path_train, path_tfidf, path_ind2vec)
+    freq_fit(path_train, path_tfidf, path_ind2vec)
 
 
 if __name__ == '__main__':
