@@ -4,7 +4,7 @@ import pickle as pk
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
-def link_fit(path_train, path_class2word):  # char
+def link_fit(path_train, path_class2word):
     class2word = dict()
     ind = 0
     for text, label in pd.read_csv(path_train).values:
@@ -21,7 +21,7 @@ def link_fit(path_train, path_class2word):  # char
         print(class2word)
 
 
-def vec_fit(path_train, path_tfidf, path_ind2vec):  # word
+def vec_fit(path_train, path_tfidf, path_ind2vec):
     class2text = dict()
     class2ind = dict()
     ind = 0
