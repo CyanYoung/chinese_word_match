@@ -6,6 +6,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 min_freq = 1
 
+path_class2word = 'dict/class2word.pkl'
+path_tfidf = 'model/tfidf.pkl'
+path_ind2vec = 'dict/ind2vec.pkl'
+
 
 def link_fit(path_train, path_class2word):
     class2word = dict()
@@ -52,14 +56,11 @@ def freq_fit(path_train, path_tfidf, path_ind2vec):
         print(class2text)
 
 
-def fit(path_train, path_class2word, path_tfidf, path_ind2vec):
+def fit(path_train):
     link_fit(path_train, path_class2word)
     freq_fit(path_train, path_tfidf, path_ind2vec)
 
 
 if __name__ == '__main__':
     path_train = 'data/train.csv'
-    path_class2word = 'dict/class2word.pkl'
-    path_tfidf = 'model/tfidf.pkl'
-    path_ind2vec = 'dict/ind2vec.pkl'
-    fit(path_train, path_class2word, path_tfidf, path_ind2vec)
+    fit(path_train)
