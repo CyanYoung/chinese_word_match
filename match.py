@@ -93,7 +93,7 @@ def cos_predict(text, match_inds, match_labels):
         return '其它'
 
 
-def predict(text, metric):
+def predict(text, name):
     text = re.sub(stop_word_re, '', text)
     for word_type, word_re in word_type_re.items():
         text = re.sub(word_re, word_type, text)
@@ -114,9 +114,9 @@ def predict(text, metric):
                             match_inds.append(ind)
                             match_labels.append(label)
     if match_inds:
-        if metric == 'edit_dist':
+        if name == 'edit_dist':
             return edit_predict(text, match_inds, match_labels)
-        elif metric == 'cos_sim':
+        elif name == 'cos_sim':
             return cos_predict(text, match_inds, match_labels)
     else:
         return '其它'
