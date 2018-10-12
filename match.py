@@ -17,9 +17,9 @@ path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
-path_class2word = 'dict/class2word.pkl'
+path_class2word = 'feat/class2word.pkl'
 path_tfidf = 'model/tfidf.pkl'
-path_ind2vec = 'dict/ind2vec.pkl'
+path_ind2vec = 'feat/ind2vec.pkl'
 texts = pd.read_csv(path_train, usecols=['text']).values
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
@@ -114,9 +114,9 @@ def predict(text, name):
                             match_inds.append(ind)
                             match_labels.append(label)
     if match_inds:
-        if name == 'edit_dist':
+        if name == 'edit':
             return edit_predict(text, match_inds, match_labels)
-        elif name == 'cos_sim':
+        elif name == 'cos':
             return cos_predict(text, match_inds, match_labels)
     else:
         return '其它'
@@ -125,5 +125,5 @@ def predict(text, name):
 if __name__ == '__main__':
     while True:
         text = input('text: ')
-        print('edit_pred: %s' % predict(text, 'edit_dist'))
-        print('cos_pred: %s' % predict(text, 'cos_sim'))
+        print('edit: %s' % predict(text, 'edit'))
+        print('cos:  %s' % predict(text, 'cos'))

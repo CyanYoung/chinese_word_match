@@ -6,9 +6,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 min_freq = 1
 
-path_class2word = 'dict/class2word.pkl'
+path_class2word = 'feat/class2word.pkl'
 path_tfidf = 'model/tfidf.pkl'
-path_ind2vec = 'dict/ind2vec.pkl'
+path_ind2vec = 'feat/ind2vec.pkl'
 
 
 def link_fit(path_train, path_class2word):
