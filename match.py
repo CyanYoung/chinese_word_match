@@ -9,7 +9,7 @@ from pypinyin import lazy_pinyin as pinyin
 
 from nltk.metrics import edit_distance as edit_dist
 
-from util import load_word_re, load_type_re, load_pair
+from util import load_word_re, load_type_re, load_poly
 
 
 path_train = 'data/train.csv'
@@ -23,8 +23,8 @@ path_ind2vec = 'feat/ind2vec.pkl'
 texts = pd.read_csv(path_train, usecols=['text']).values
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
-homo_dict = load_pair(path_homo)
-syno_dict = load_pair(path_syno)
+homo_dict = load_poly(path_homo)
+syno_dict = load_poly(path_syno)
 with open(path_class2word, 'rb') as f:
     class2word = pk.load(f)
 with open(path_tfidf, 'rb') as f:

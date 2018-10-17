@@ -25,7 +25,7 @@ def load_type_re(path_dir):
     return word_type_re
 
 
-def load_pair(path):
+def load_poly(path):
     vocab = dict()
     for word1, word2 in pd.read_csv(path).values:
         if word1 not in vocab:
