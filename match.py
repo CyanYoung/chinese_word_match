@@ -1,4 +1,3 @@
-import pandas as pd
 import pickle as pk
 
 import re
@@ -9,7 +8,7 @@ from pypinyin import lazy_pinyin as pinyin
 
 from nltk.metrics import edit_distance as edit_dist
 
-from util import load_word_re, load_type_re, load_poly, map_item
+from util import load_word_re, load_type_re, load_poly, flat_read, map_item
 
 
 def find(word, cands, word_dict):
@@ -18,25 +17,27 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def edit_predict(text, match_inds, match_labels):
+def edit_predict(text, sents, match_inds, match_labels, cand, thre):
     phon = ''.join(pinyin(text))
     match_phons = list()
-    for match_ind in match_inds:
-        match_phons.append(''.join(pinyin(texts[match_ind][0])))
+    for ind in match_inds:
+        match_phons.append(''.join(pinyin(sents[ind])))
     rates = list()
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
         rates.append(dist / len(phon))
-    min_rate = min(rates)
-    min_ind = np.argmin(np.array(rates))
+    rates = np.array(rates)
+    bound = min(len(rates), cand)
+    min_rates = sorted(rates)[:bound]
+    min_inds = np.argsort(rates)[:bound]
+    min_preds = [match_labels[ind] for ind in min_inds]
     if __name__ == '__main__':
         formats = list()
-        for match_phon, rate in zip(match_phons, rates):
-            formats.append('{} {:.3f}'.format(match_phon, rate))
-        print(', '.join(formats))
-        print('{} {:.3f}'.format(match_phons[int(min_ind)], min_rate))
-    if min_rate < 0.5:
-        return match_labels[int(min_ind)]
+        for pred, rate, ind in zip(min_preds, min_rates, min_inds):
+            formats.append('{} {:.3f} {}'.format(pred, rate, match_phons[ind]))
+        return ', '.join(formats)
+    if min_rates[0] < thre:
+        return min_preds[0]
     else:
         return '其它'
 
@@ -49,27 +50,29 @@ def cos_sim(vec1, vec2):
         return 0.0
 
 
-def cos_predict(text, match_inds, match_labels):
-    vec = dict()
+def cos_predict(text, sents, match_inds, match_labels, cand, thre):
+    vecs = dict()
     for label, model in tfidf.items():
-        vec[label] = model.transform([text]).toarray()
+        vecs[label] = model.transform([text]).toarray()
     match_texts = list()
-    for match_ind in match_inds:
-        match_texts.append(texts[match_ind][0])
+    for ind in match_inds:
+        match_texts.append(sents[ind])
     sims = list()
-    for match_ind, match_label in zip(match_inds, match_labels):
-        match_vec = ind2vec[match_ind]
-        sims.append(cos_sim(vec[match_label], match_vec))
-    max_sim = max(sims)
-    max_ind = np.argmax(np.array(sims))
+    for ind, label in zip(match_inds, match_labels):
+        match_vec = ind2vec[ind]
+        sims.append(cos_sim(vecs[label], match_vec))
+    sims = np.array(sims)
+    bound = min(len(sims), cand)
+    max_sims = sorted(sims, reverse=True)[:bound]
+    max_inds = np.argsort(-sims)[:bound]
+    max_preds = [match_labels[ind] for ind in max_inds]
     if __name__ == '__main__':
         formats = list()
-        for match_text, sim in zip(match_texts, sims):
-            formats.append('{} {:.3f}'.format(match_text, sim))
-        print(', '.join(formats))
-        print('{} {:.3f}'.format(match_texts[int(max_ind)], max_sim))
-    if max_sim > 0.5:
-        return match_labels[int(max_ind)]
+        for pred, sim, ind in zip(max_preds, max_sims, max_inds):
+            formats.append('{} {:.3f} {}'.format(pred, sim, match_texts[ind]))
+        return ', '.join(formats)
+    if max_sims[0] > thre:
+        return max_preds[0]
     else:
         return '其它'
 
@@ -79,7 +82,7 @@ path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
-texts = pd.read_csv(path_train, usecols=['text']).values
+sents = flat_read(path_train, 'text')
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_poly(path_homo)
@@ -121,7 +124,7 @@ def predict(text, name):
                             match_labels.append(label)
     if match_inds:
         func = map_item(name, funcs)
-        return func(text, match_inds, match_labels)
+        return func(text, sents, match_inds, match_labels, cand=5, thre=0.5)
     else:
         return '其它'
 
@@ -130,4 +133,4 @@ if __name__ == '__main__':
     while True:
         text = input('text: ')
         print('edit: %s' % predict(text, 'edit'))
-        print('cos: %s' % predict(text, 'cos'))
+        print('cos:  %s' % predict(text, 'cos'))
