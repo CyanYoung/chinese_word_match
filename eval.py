@@ -15,7 +15,7 @@ def test(name, path):
         preds.append(pred)
         if pred != label:
             errors.append((text, label, pred))
-    print('%s %.2f\n' % ('acc:', accuracy_score(labels, preds)))
+    print('\n%s %s %.2f\n' % (name, 'acc:', accuracy_score(labels, preds)))
     for text, label, pred in errors:
         print('{}: {} -> {}'.format(text, label, pred))
 
