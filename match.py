@@ -17,11 +17,11 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def edit_predict(text, sents, match_inds, match_labels, cand, thre):
-    phon = ''.join(pinyin(text))
+def edit_predict(sent, texts, match_inds, match_labels, cand, thre):
+    phon = ''.join(pinyin(sent))
     match_phons = list()
     for ind in match_inds:
-        match_phons.append(''.join(pinyin(sents[ind])))
+        match_phons.append(''.join(pinyin(texts[ind])))
     rates = list()
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
@@ -50,13 +50,13 @@ def cos_sim(vec1, vec2):
         return 0.0
 
 
-def cos_predict(text, sents, match_inds, match_labels, cand, thre):
+def cos_predict(sent, texts, match_inds, match_labels, cand, thre):
     vecs = dict()
     for label, model in tfidf.items():
-        vecs[label] = model.transform([text]).toarray()
+        vecs[label] = model.transform([sent]).toarray()
     match_texts = list()
     for ind in match_inds:
-        match_texts.append(sents[ind])
+        match_texts.append(texts[ind])
     sims = list()
     for ind, label in zip(match_inds, match_labels):
         match_vec = ind2vec[ind]
@@ -82,7 +82,7 @@ path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
-sents = flat_read(path_train, 'text')
+texts = flat_read(path_train, 'text')
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_poly(path_homo)
@@ -103,13 +103,13 @@ funcs = {'edit': edit_predict,
 
 
 def predict(text, name):
-    text = re.sub(stop_word_re, '', text)
+    sent = re.sub(stop_word_re, '', text.strip())
     for word_type, word_re in word_type_re.items():
-        text = re.sub(word_re, word_type, text)
+        sent = re.sub(word_re, word_type, sent)
     ind_set = set()
     match_inds = list()
     match_labels = list()
-    for word in text:
+    for word in sent:
         cands = set()
         cands.add(word)
         find(word, cands, homo_dict)
@@ -124,7 +124,7 @@ def predict(text, name):
                             match_labels.append(label)
     if match_inds:
         func = map_item(name, funcs)
-        return func(text, sents, match_inds, match_labels, cand=5, thre=0.5)
+        return func(sent, texts, match_inds, match_labels, cand=5, thre=0.5)
     else:
         return '其它'
 
