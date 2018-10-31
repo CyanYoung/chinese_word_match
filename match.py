@@ -47,14 +47,16 @@ def edit_predict(text, match_inds, match_labels):
     rates = list()
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
-        rates.append(round(dist / len(phon), 2))
+        rates.append(dist / len(phon))
     min_rate = min(rates)
     min_ind = np.argmin(np.array(rates))
     if __name__ == '__main__':
-        print(phon)
-        print(match_phons)
-        print(rates)
-        print(match_phons[int(min_ind)], min_rate)
+        formats = list()
+        bound = min(len(match_phons), 5)
+        for match_phon, rate in zip(match_phons[:bound], rates[:bound]):
+            formats.append('{} {:.3f}'.format(match_phon, rate))
+        print(', '.join(formats))
+        print('{} {:.3f}'.format(match_phons[int(min_ind)], min_rate))
     if min_rate < 0.5:
         return match_labels[int(min_ind)]
     else:
@@ -64,7 +66,7 @@ def edit_predict(text, match_inds, match_labels):
 def cos_sim(vec1, vec2):
     deno = np.linalg.norm(vec1) * np.linalg.norm(vec2)
     if deno:
-        return round((np.dot(vec1, vec2) / deno)[0], 2)
+        return (np.dot(vec1, vec2) / deno)[0]
     else:
         return 0.0
 
@@ -83,10 +85,12 @@ def cos_predict(text, match_inds, match_labels):
     max_sim = max(sims)
     max_ind = np.argmax(np.array(sims))
     if __name__ == '__main__':
-        print(text)
-        print(match_texts)
-        print(sims)
-        print(match_texts[int(max_ind)], max_sim)
+        formats = list()
+        bound = min(len(match_texts), 5)
+        for match_text, sim in zip(match_texts[:bound], sims[:bound]):
+            formats.append('{} {:.3f}'.format(match_text, sim))
+        print(', '.join(formats))
+        print('{} {:.3f}'.format(match_texts[int(max_ind)], max_sim))
     if max_sim > 0.5:
         return match_labels[int(max_ind)]
     else:
