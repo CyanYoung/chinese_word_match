@@ -9,7 +9,7 @@ from pypinyin import lazy_pinyin as pinyin
 
 from nltk.metrics import edit_distance as edit_dist
 
-from util import load_word_re, load_type_re, load_poly
+from util import load_word_re, load_type_re, load_poly, map_item
 
 
 path_train = 'data/train.csv'
@@ -17,14 +17,15 @@ path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homonym.csv'
 path_syno = 'dict/synonym.csv'
-path_class2word = 'feat/class2word.pkl'
-path_tfidf = 'model/tfidf.pkl'
-path_ind2vec = 'feat/ind2vec.pkl'
 texts = pd.read_csv(path_train, usecols=['text']).values
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_poly(path_homo)
 syno_dict = load_poly(path_syno)
+
+path_class2word = 'feat/class2word.pkl'
+path_tfidf = 'model/tfidf.pkl'
+path_ind2vec = 'feat/ind2vec.pkl'
 with open(path_class2word, 'rb') as f:
     class2word = pk.load(f)
 with open(path_tfidf, 'rb') as f:
@@ -97,6 +98,10 @@ def cos_predict(text, match_inds, match_labels):
         return '其它'
 
 
+funcs = {'edit': edit_predict,
+         'cos': cos_predict}
+
+
 def predict(text, name):
     text = re.sub(stop_word_re, '', text)
     for word_type, word_re in word_type_re.items():
@@ -118,10 +123,8 @@ def predict(text, name):
                             match_inds.append(ind)
                             match_labels.append(label)
     if match_inds:
-        if name == 'edit':
-            return edit_predict(text, match_inds, match_labels)
-        elif name == 'cos':
-            return cos_predict(text, match_inds, match_labels)
+        func = map_item(name, funcs)
+        return func(text, match_inds, match_labels)
     else:
         return '其它'
 

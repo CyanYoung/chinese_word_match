@@ -35,3 +35,10 @@ def load_poly(path):
             vocab[word2] = set()
         vocab[word2].add(word1)
     return vocab
+
+
+def map_item(name, items):
+    if name in items:
+        return items[name]
+    else:
+        raise KeyError
