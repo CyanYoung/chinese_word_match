@@ -53,8 +53,7 @@ def edit_predict(text, match_inds, match_labels):
     min_ind = np.argmin(np.array(rates))
     if __name__ == '__main__':
         formats = list()
-        bound = min(len(match_phons), 5)
-        for match_phon, rate in zip(match_phons[:bound], rates[:bound]):
+        for match_phon, rate in zip(match_phons, rates):
             formats.append('{} {:.3f}'.format(match_phon, rate))
         print(', '.join(formats))
         print('{} {:.3f}'.format(match_phons[int(min_ind)], min_rate))
@@ -87,8 +86,7 @@ def cos_predict(text, match_inds, match_labels):
     max_ind = np.argmax(np.array(sims))
     if __name__ == '__main__':
         formats = list()
-        bound = min(len(match_texts), 5)
-        for match_text, sim in zip(match_texts[:bound], sims[:bound]):
+        for match_text, sim in zip(match_texts, sims):
             formats.append('{} {:.3f}'.format(match_text, sim))
         print(', '.join(formats))
         print('{} {:.3f}'.format(match_texts[int(max_ind)], max_sim))
