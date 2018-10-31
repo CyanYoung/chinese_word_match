@@ -12,28 +12,6 @@ from nltk.metrics import edit_distance as edit_dist
 from util import load_word_re, load_type_re, load_poly, map_item
 
 
-path_train = 'data/train.csv'
-path_type_dir = 'dict/word_type'
-path_stop_word = 'dict/stop_word.txt'
-path_homo = 'dict/homonym.csv'
-path_syno = 'dict/synonym.csv'
-texts = pd.read_csv(path_train, usecols=['text']).values
-word_type_re = load_type_re(path_type_dir)
-stop_word_re = load_word_re(path_stop_word)
-homo_dict = load_poly(path_homo)
-syno_dict = load_poly(path_syno)
-
-path_class2word = 'feat/class2word.pkl'
-path_tfidf = 'model/tfidf.pkl'
-path_ind2vec = 'feat/ind2vec.pkl'
-with open(path_class2word, 'rb') as f:
-    class2word = pk.load(f)
-with open(path_tfidf, 'rb') as f:
-    tfidf = pk.load(f)
-with open(path_ind2vec, 'rb') as f:
-    ind2vec = pk.load(f)
-
-
 def find(word, cands, word_dict):
     if word in word_dict:
         for cand in word_dict[word]:
@@ -96,6 +74,27 @@ def cos_predict(text, match_inds, match_labels):
         return '其它'
 
 
+path_train = 'data/train.csv'
+path_type_dir = 'dict/word_type'
+path_stop_word = 'dict/stop_word.txt'
+path_homo = 'dict/homonym.csv'
+path_syno = 'dict/synonym.csv'
+texts = pd.read_csv(path_train, usecols=['text']).values
+word_type_re = load_type_re(path_type_dir)
+stop_word_re = load_word_re(path_stop_word)
+homo_dict = load_poly(path_homo)
+syno_dict = load_poly(path_syno)
+
+path_class2word = 'feat/class2word.pkl'
+path_tfidf = 'model/tfidf.pkl'
+path_ind2vec = 'feat/ind2vec.pkl'
+with open(path_class2word, 'rb') as f:
+    class2word = pk.load(f)
+with open(path_tfidf, 'rb') as f:
+    tfidf = pk.load(f)
+with open(path_ind2vec, 'rb') as f:
+    ind2vec = pk.load(f)
+
 funcs = {'edit': edit_predict,
          'cos': cos_predict}
 
@@ -131,4 +130,4 @@ if __name__ == '__main__':
     while True:
         text = input('text: ')
         print('edit: %s' % predict(text, 'edit'))
-        print('cos:  %s' % predict(text, 'cos'))
+        print('cos: %s' % predict(text, 'cos'))
