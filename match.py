@@ -17,8 +17,8 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def edit_predict(sent, texts, match_inds, match_labels, max_cand, thre):
-    phon = ''.join(pinyin(sent))
+def edit_predict(text, match_inds, match_labels, max_cand, thre):
+    phon = ''.join(pinyin(text))
     match_phons = list()
     for ind in match_inds:
         match_phons.append(''.join(pinyin(texts[ind])))
@@ -50,10 +50,10 @@ def cos_sim(vec1, vec2):
         return 0.0
 
 
-def cos_predict(sent, texts, match_inds, match_labels, max_cand, thre):
+def cos_predict(text, match_inds, match_labels, max_cand, thre):
     vecs = dict()
     for label, model in tfidf.items():
-        vecs[label] = model.transform([sent]).toarray()
+        vecs[label] = model.transform([text]).toarray()
     match_texts = list()
     for ind in match_inds:
         match_texts.append(texts[ind])
@@ -103,13 +103,13 @@ funcs = {'edit': edit_predict,
 
 
 def predict(text, name):
-    sent = re.sub(stop_word_re, '', text.strip())
+    text = re.sub(stop_word_re, '', text.strip())
     for word_type, word_re in word_type_re.items():
-        sent = re.sub(word_re, word_type, sent)
+        text = re.sub(word_re, word_type, text)
     ind_set = set()
     match_inds = list()
     match_labels = list()
-    for word in sent:
+    for word in text:
         cands = set()
         cands.add(word)
         find(word, cands, homo_dict)
@@ -124,7 +124,7 @@ def predict(text, name):
                             match_labels.append(label)
     if match_inds:
         func = map_item(name, funcs)
-        return func(sent, texts, match_inds, match_labels, max_cand=5, thre=0.5)
+        return func(text, match_inds, match_labels, max_cand=5, thre=0.5)
     else:
         return '其它'
 
