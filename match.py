@@ -17,7 +17,7 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def edit_predict(sent, texts, match_inds, match_labels, cand, thre):
+def edit_predict(sent, texts, match_inds, match_labels, max_cand, thre):
     phon = ''.join(pinyin(sent))
     match_phons = list()
     for ind in match_inds:
@@ -27,7 +27,7 @@ def edit_predict(sent, texts, match_inds, match_labels, cand, thre):
         dist = edit_dist(phon, match_phon)
         rates.append(dist / len(phon))
     rates = np.array(rates)
-    bound = min(len(rates), cand)
+    bound = min(len(rates), max_cand)
     min_rates = sorted(rates)[:bound]
     min_inds = np.argsort(rates)[:bound]
     min_preds = [match_labels[ind] for ind in min_inds]
@@ -50,7 +50,7 @@ def cos_sim(vec1, vec2):
         return 0.0
 
 
-def cos_predict(sent, texts, match_inds, match_labels, cand, thre):
+def cos_predict(sent, texts, match_inds, match_labels, max_cand, thre):
     vecs = dict()
     for label, model in tfidf.items():
         vecs[label] = model.transform([sent]).toarray()
@@ -62,7 +62,7 @@ def cos_predict(sent, texts, match_inds, match_labels, cand, thre):
         match_vec = ind2vec[ind]
         sims.append(cos_sim(vecs[label], match_vec))
     sims = np.array(sims)
-    bound = min(len(sims), cand)
+    bound = min(len(sims), max_cand)
     max_sims = sorted(sims, reverse=True)[:bound]
     max_inds = np.argsort(-sims)[:bound]
     max_preds = [match_labels[ind] for ind in max_inds]
@@ -124,7 +124,7 @@ def predict(text, name):
                             match_labels.append(label)
     if match_inds:
         func = map_item(name, funcs)
-        return func(sent, texts, match_inds, match_labels, cand=5, thre=0.5)
+        return func(sent, texts, match_inds, match_labels, max_cand=5, thre=0.5)
     else:
         return '其它'
 
