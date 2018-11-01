@@ -36,7 +36,7 @@ def edit_predict(sent, texts, match_inds, match_labels, max_cand, thre):
         for pred, rate, ind in zip(min_preds, min_rates, min_inds):
             formats.append('{} {:.3f} {}'.format(pred, rate, match_phons[ind]))
         return ', '.join(formats)
-    if min_rates[0] < thre:
+    elif min_rates[0] < thre:
         return min_preds[0]
     else:
         return '其它'
@@ -71,7 +71,7 @@ def cos_predict(sent, texts, match_inds, match_labels, max_cand, thre):
         for pred, sim, ind in zip(max_preds, max_sims, max_inds):
             formats.append('{} {:.3f} {}'.format(pred, sim, match_texts[ind]))
         return ', '.join(formats)
-    if max_sims[0] > thre:
+    elif max_sims[0] > thre:
         return max_preds[0]
     else:
         return '其它'
