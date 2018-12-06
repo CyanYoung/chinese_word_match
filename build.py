@@ -1,7 +1,8 @@
-import pandas as pd
 import pickle as pk
 
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+from util import flat_read
 
 
 min_freq = 1
@@ -11,10 +12,10 @@ path_tfidf = 'model/tfidf.pkl'
 path_ind2vec = 'feat/ind2vec.pkl'
 
 
-def link_fit(path_train, path_class2word):
+def link_fit(texts, labels, path_class2word):
     class2word = dict()
     ind = 0
-    for text, label in pd.read_csv(path_train).values:
+    for text, label in zip(texts, labels):
         if label not in class2word:
             class2word[label] = dict()
         for word in text:
@@ -28,19 +29,16 @@ def link_fit(path_train, path_class2word):
         print(class2word)
 
 
-def freq_fit(path_train, path_tfidf, path_ind2vec):
-    class2text = dict()
-    class2ind = dict()
+def freq_fit(texts, labels, path_tfidf, path_ind2vec):
+    class2text, class2ind = dict(), dict()
     ind = 0
-    for text, label in pd.read_csv(path_train).values:
+    for text, label in zip(texts, labels):
         if label not in class2text:
-            class2text[label] = list()
-            class2ind[label] = list()
+            class2text[label], class2ind[label] = list(), list()
         class2text[label].append(text)
         class2ind[label].append(ind)
         ind = ind + 1
-    tfidf = dict()
-    ind2vec = dict()
+    tfidf, ind2vec = dict(), dict()
     for label, texts in class2text.items():
         tfidf[label] = TfidfVectorizer(token_pattern='\w', min_df=min_freq)
         tfidf[label].fit(texts)
@@ -57,8 +55,10 @@ def freq_fit(path_train, path_tfidf, path_ind2vec):
 
 
 def fit(path_train):
-    link_fit(path_train, path_class2word)
-    freq_fit(path_train, path_tfidf, path_ind2vec)
+    texts = flat_read(path_train, 'text')
+    labels = flat_read(path_train, 'text')
+    link_fit(texts, labels, path_class2word)
+    freq_fit(texts, labels, path_tfidf, path_ind2vec)
 
 
 if __name__ == '__main__':
