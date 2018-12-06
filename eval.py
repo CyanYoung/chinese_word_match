@@ -1,14 +1,18 @@
-import pandas as pd
-
 from sklearn.metrics import accuracy_score
 
 from match import predict
 
+from util import flat_read
 
-def test(name, path):
-    labels, preds, errors = list(), list(), list()
-    for text, label in pd.read_csv(path).values:
-        labels.append(label)
+
+path_test = 'data/test.csv'
+texts = flat_read(path_test, 'text')
+labels = flat_read(path_test, 'label')
+
+
+def test(name, texts, labels):
+    preds, errors = list(), list()
+    for text, label in zip(texts, labels):
         pred = predict(text, name)
         preds.append(pred)
         if pred != label:
@@ -19,6 +23,5 @@ def test(name, path):
 
 
 if __name__ == '__main__':
-    path = 'data/test.csv'
-    test('edit', path)
-    test('cos', path)
+    test('edit', texts, labels)
+    test('cos', texts, labels)
