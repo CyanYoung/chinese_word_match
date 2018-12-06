@@ -6,9 +6,7 @@ from match import predict
 
 
 def test(name, path):
-    labels = list()
-    preds = list()
-    errors = list()
+    labels, preds, errors = list(), list(), list()
     for text, label in pd.read_csv(path).values:
         labels.append(label)
         pred = predict(text, name)

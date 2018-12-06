@@ -21,8 +21,7 @@ def save(path, texts, labels):
 
 def prepare(path, path_dir):
     text_set = set()
-    texts = list()
-    labels = list()
+    texts, labels = list(), list()
     files = os.listdir(path_dir)
     for file in files:
         label = os.path.splitext(file)[0]

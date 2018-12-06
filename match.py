@@ -107,8 +107,7 @@ def predict(text, name):
     for word_type, word_re in word_type_re.items():
         text = re.sub(word_re, word_type, text)
     ind_set = set()
-    match_inds = list()
-    match_labels = list()
+    match_inds, match_labels = list(), list()
     for word in text:
         cands = set()
         cands.add(word)
