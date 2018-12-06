@@ -56,7 +56,7 @@ def freq_fit(texts, labels, path_tfidf, path_ind2vec):
 
 def fit(path_train):
     texts = flat_read(path_train, 'text')
-    labels = flat_read(path_train, 'text')
+    labels = flat_read(path_train, 'label')
     link_fit(texts, labels, path_class2word)
     freq_fit(texts, labels, path_tfidf, path_ind2vec)
 
