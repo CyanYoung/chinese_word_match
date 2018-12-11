@@ -3,6 +3,7 @@ import pickle as pk
 import re
 
 import numpy as np
+from scipy.spatial.distance import cosine as cos_dist
 
 from pypinyin import lazy_pinyin as pinyin
 
@@ -42,14 +43,6 @@ def edit_predict(text, match_inds, match_labels, max_cand, thre):
         return '其它'
 
 
-def cos_sim(vec1, vec2):
-    deno = np.linalg.norm(vec1) * np.linalg.norm(vec2)
-    if deno:
-        return (np.dot(vec1, vec2) / deno)[0]
-    else:
-        return 0.0
-
-
 def cos_predict(text, match_inds, match_labels, max_cand, thre):
     vecs = dict()
     for label, model in tfidf.items():
@@ -60,7 +53,7 @@ def cos_predict(text, match_inds, match_labels, max_cand, thre):
     sims = list()
     for ind, label in zip(match_inds, match_labels):
         match_vec = ind2vec[ind]
-        sims.append(cos_sim(vecs[label], match_vec))
+        sims.append(1 - cos_dist(vecs[label], match_vec))
     sims = np.array(sims)
     bound = min(len(sims), max_cand)
     max_sims = sorted(sims, reverse=True)[:bound]
@@ -98,8 +91,8 @@ with open(path_tfidf, 'rb') as f:
 with open(path_ind2vec, 'rb') as f:
     ind2vec = pk.load(f)
 
-funcs = {'edit': edit_predict,
-         'cos': cos_predict}
+funcs = {'cos': cos_predict,
+         'edit': edit_predict}
 
 
 def predict(text, name):
