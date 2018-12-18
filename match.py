@@ -73,8 +73,8 @@ def cos_predict(text, match_inds, match_labels, max_cand, thre):
 path_train = 'data/train.csv'
 path_type_dir = 'dict/word_type'
 path_stop_word = 'dict/stop_word.txt'
-path_homo = 'dict/homonym.csv'
-path_syno = 'dict/synonym.csv'
+path_homo = 'dict/homo.csv'
+path_syno = 'dict/syno.csv'
 texts = flat_read(path_train, 'text')
 word_type_re = load_type_re(path_type_dir)
 stop_word_re = load_word_re(path_stop_word)
