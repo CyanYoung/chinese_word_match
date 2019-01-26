@@ -81,11 +81,11 @@ stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_poly(path_homo)
 syno_dict = load_poly(path_syno)
 
-path_class2word = 'feat/class2word.pkl'
+path_label2word = 'feat/label2word.pkl'
 path_tfidf = 'model/tfidf.pkl'
 path_ind2vec = 'feat/ind2vec.pkl'
-with open(path_class2word, 'rb') as f:
-    class2word = pk.load(f)
+with open(path_label2word, 'rb') as f:
+    label2word = pk.load(f)
 with open(path_tfidf, 'rb') as f:
     tfidf = pk.load(f)
 with open(path_ind2vec, 'rb') as f:
@@ -106,7 +106,7 @@ def predict(text, name):
         cands.add(word)
         find(word, cands, homo_dict)
         find(word, cands, syno_dict)
-        for label, words in class2word.items():
+        for label, words in label2word.items():
             for cand in cands:
                 if cand in words:
                     for ind in words[cand]:
