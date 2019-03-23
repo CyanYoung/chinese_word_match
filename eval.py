@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score
 
 from match import predict
 
@@ -17,7 +17,8 @@ def test(name, texts, labels):
         preds.append(pred)
         if pred != label:
             errors.append((text, label, pred))
-    print('\n%s %s %.2f\n' % (name, 'acc:', accuracy_score(labels, preds)))
+    f1 = f1_score(labels, preds)
+    print('\n%s f1: %.2f - acc: %.2f\n' % (name, f1, accuracy_score(labels, preds)))
     for text, label, pred in errors:
         print('{}: {} -> {}'.format(text, label, pred))
 
