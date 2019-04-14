@@ -18,11 +18,11 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def edit_predict(text, match_inds, match_labels, max_cand, thre):
+def edit_predict(text, match_sents, match_labels, max_cand, thre):
     phon = ''.join(pinyin(text))
     match_phons = list()
-    for ind in match_inds:
-        match_phons.append(''.join(pinyin(texts[ind])))
+    for sent_ind in match_sents:
+        match_phons.append(''.join(pinyin(texts[sent_ind])))
     rates = list()
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
@@ -37,23 +37,19 @@ def edit_predict(text, match_inds, match_labels, max_cand, thre):
         for pred, rate, ind in zip(min_preds, min_rates, min_inds):
             formats.append('{} {:.3f} {}'.format(pred, rate, match_phons[ind]))
         return ', '.join(formats)
-    elif min_rates[0] < thre:
+    if min_rates[0] < thre:
         return min_preds[0]
     else:
         return '其它'
 
 
-def cos_predict(text, match_inds, match_labels, max_cand, thre):
-    vecs = dict()
-    for label, model in tfidf.items():
-        vecs[label] = model.transform([text]).toarray()
-    match_texts = list()
-    for ind in match_inds:
-        match_texts.append(texts[ind])
-    sims = list()
-    for ind, label in zip(match_inds, match_labels):
-        match_vec = ind2vec[ind]
-        sims.append(1 - cos_dist(vecs[label], match_vec))
+def cos_predict(text, match_sents, match_labels, max_cand, thre):
+    vec = tfidf.transform([text]).toarray()
+    match_texts, sims = list(), list()
+    for sent_ind, label in zip(match_sents, match_labels):
+        match_texts.append(texts[sent_ind])
+        match_vec = sent_vec[sent_ind]
+        sims.append(1 - cos_dist(vec, match_vec))
     sims = np.array(sims)
     bound = min(len(sims), max_cand)
     max_sims = sorted(sims, reverse=True)[:bound]
@@ -64,7 +60,7 @@ def cos_predict(text, match_inds, match_labels, max_cand, thre):
         for pred, sim, ind in zip(max_preds, max_sims, max_inds):
             formats.append('{} {:.3f} {}'.format(pred, sim, match_texts[ind]))
         return ', '.join(formats)
-    elif max_sims[0] > thre:
+    if max_sims[0] > thre:
         return max_preds[0]
     else:
         return '其它'
@@ -81,42 +77,43 @@ stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_poly(path_homo)
 syno_dict = load_poly(path_syno)
 
-path_label2word = 'feat/label2word.pkl'
+path_word_sent = 'feat/word_sent.pkl'
 path_tfidf = 'model/tfidf.pkl'
-path_ind2vec = 'feat/ind2vec.pkl'
-with open(path_label2word, 'rb') as f:
-    label2word = pk.load(f)
+path_sent_vec = 'feat/sent_vec.pkl'
+with open(path_word_sent, 'rb') as f:
+    word_sent = pk.load(f)
 with open(path_tfidf, 'rb') as f:
     tfidf = pk.load(f)
-with open(path_ind2vec, 'rb') as f:
-    ind2vec = pk.load(f)
+with open(path_sent_vec, 'rb') as f:
+    sent_vec = pk.load(f)
 
-funcs = {'cos': cos_predict,
-         'edit': edit_predict}
+funcs = {'edit': edit_predict,
+         'cos': cos_predict}
 
 
 def predict(text, name):
     text = re.sub(stop_word_re, '', text.strip())
     for word_type, word_re in word_type_re.items():
         text = re.sub(word_re, word_type, text)
-    ind_set = set()
-    match_inds, match_labels = list(), list()
+    cands = set()
     for word in text:
-        cands = set()
-        cands.add(word)
-        find(word, cands, homo_dict)
-        find(word, cands, syno_dict)
-        for label, words in label2word.items():
-            for cand in cands:
-                if cand in words:
-                    for ind in words[cand]:
-                        if ind not in ind_set:
-                            ind_set.add(ind)
-                            match_inds.append(ind)
-                            match_labels.append(label)
-    if match_inds:
+        if word not in cands:
+            cands.add(word)
+            find(word, cands, homo_dict)
+            find(word, cands, syno_dict)
+    ind_set = set()
+    match_sents, match_labels = list(), list()
+    for cand in cands:
+        if cand in word_sent:
+            pairs = word_sent[cand]
+            for sent_ind, label in pairs:
+                if sent_ind not in ind_set:
+                    ind_set.add(sent_ind)
+                    match_sents.append(sent_ind)
+                    match_labels.append(label)
+    if match_sents:
         func = map_item(name, funcs)
-        return func(text, match_inds, match_labels, max_cand=5, thre=0.5)
+        return func(text, match_sents, match_labels, max_cand=5, thre=0.5)
     else:
         return '其它'
 
