@@ -7,6 +7,3 @@
 *.so
 *.out
 __pycache__
-
-# exceed
-sent_vec.pkl

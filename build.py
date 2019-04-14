@@ -28,16 +28,16 @@ def link_fit(texts, labels, path_word_sent):
 
 
 def freq_fit(texts, labels, path_tfidf, path_sent_vec):
-    label2text = dict()
+    label_texts = dict()
     for text, label in zip(texts, labels):
-        if label not in label2text:
-            label2text[label] = list()
-        label2text[label].append(text)
+        if label not in label_texts:
+            label_texts[label] = list()
+        label_texts[label].append(text)
     docs = list()
-    for texts in label2text.values():
-        docs.append(''.join(texts))
+    for doc_texts in label_texts.values():
+        docs.append(''.join(doc_texts))
     model = TfidfVectorizer(token_pattern='\w', min_df=min_freq)
-    model.fit(texts)
+    model.fit(docs)
     sent_vecs = model.transform(texts).toarray()
     with open(path_tfidf, 'wb') as f:
         pk.dump(model, f)
