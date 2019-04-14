@@ -6,14 +6,10 @@ prepare() 将按类文件保存的数据汇总、去重，去除停用词、统�
 
 #### 2.build
 
-link_fit() 建立 label2word 字典、倒排索引，实现类、字、句索引的映射
-
-freq_fit() 训练各类的 tfidf 模型，建立 ind2vec 字典，实现句索引、句向量的映射
+link_fit() 建立 word_sent 字典，freq_fit() 通过 tfidf 建立 sent_vec 字典
 
 #### 3.match
 
-通过 label2word 按字查找共现的句索引，包括同音、同义字
+通过 word_sent 按字查找共现的句索引，根据同音、同义字典扩充
 
-edit_predict() 定义编辑距离系数 edit_dist / len(phon)，将字转换为拼音
-
-cos_predict() 使用余弦相关系数，通过各类的 tfidf 模型分别得到句向量进行匹配
+edit_predict() 使用拼音的编辑距离比、cos_predict() 使用余弦相似度进行匹配
