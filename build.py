@@ -1,5 +1,7 @@
 import pickle as pk
 
+import jieba
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from util import flat_read
@@ -7,56 +9,53 @@ from util import flat_read
 
 min_freq = 1
 
-path_word2sent = 'feat/word2sent.pkl'
+path_cut_word = 'dict/cut_word.txt'
+jieba.load_userdict(path_cut_word)
+
+path_word_sent = 'feat/word_sent.pkl'
 path_tfidf = 'model/tfidf.pkl'
-path_ind2vec = 'feat/ind2vec.pkl'
+path_sent_vec = 'feat/sent_vec.pkl'
 
 
-def link_fit(texts, labels, path_word2sent):
-    word2sent = dict()
+def link_fit(texts, labels, path_word_sent):
+    word_sents = dict()
     sent_ind = 0
     for text, label in zip(texts, labels):
         for word in text:
-            if word not in word2sent:
-                word2sent[word] = set()
-            word2sent[word].add((sent_ind, label))
+            if word not in word_sents:
+                word_sents[word] = set()
+            word_sents[word].add((sent_ind, label))
         sent_ind = sent_ind + 1
-    with open(path_word2sent, 'wb') as f:
-        pk.dump(word2sent, f)
+    with open(path_word_sent, 'wb') as f:
+        pk.dump(word_sents, f)
     if __name__ == '__main__':
-        print(word2sent)
+        print(word_sents)
 
 
-def freq_fit(texts, labels, path_tfidf, path_ind2vec):
-    label2text, label2ind = dict(), dict()
-    ind = 0
+def freq_fit(texts, labels, path_tfidf, path_sent_vec):
+    label2text = dict()
     for text, label in zip(texts, labels):
         if label not in label2text:
-            label2text[label], label2ind[label] = list(), list()
-        label2text[label].append(text)
-        label2ind[label].append(ind)
-        ind = ind + 1
-    tfidf, ind2vec = dict(), dict()
-    for label, texts in label2text.items():
-        tfidf[label] = TfidfVectorizer(token_pattern='\w', min_df=min_freq)
-        tfidf[label].fit(texts)
-        vecs = tfidf[label].transform(texts).toarray()
-        inds = label2ind[label]
-        for ind, vec in zip(inds, vecs):
-            ind2vec[ind] = vec
+            label2text[label] = list()
+        cut_text = ' '.join(jieba.cut(text))
+        label2text[label].append(cut_text)
+    cut_docs = list()
+    for cut_texts in label2text.values():
+        cut_docs.append(' '.join(cut_texts))
+    model = TfidfVectorizer(token_pattern='\w+', min_df=min_freq)
+    model.fit(texts)
+    sent_vecs = model.transform(texts).toarray()
     with open(path_tfidf, 'wb') as f:
-        pk.dump(tfidf, f)
-    with open(path_ind2vec, 'wb') as f:
-        pk.dump(ind2vec, f)
-    if __name__ == '__main__':
-        print(label2text)
+        pk.dump(model, f)
+    with open(path_sent_vec, 'wb') as f:
+        pk.dump(sent_vecs, f)
 
 
 def fit(path_train):
     texts = flat_read(path_train, 'text')
     labels = flat_read(path_train, 'label')
-    link_fit(texts, labels, path_word2sent)
-    freq_fit(texts, labels, path_tfidf, path_ind2vec)
+    link_fit(texts, labels, path_word_sent)
+    freq_fit(texts, labels, path_tfidf, path_sent_vec)
 
 
 if __name__ == '__main__':
