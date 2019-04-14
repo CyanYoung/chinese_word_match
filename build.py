@@ -7,26 +7,24 @@ from util import flat_read
 
 min_freq = 1
 
-path_label2word = 'feat/label2word.pkl'
+path_word2sent = 'feat/word2sent.pkl'
 path_tfidf = 'model/tfidf.pkl'
 path_ind2vec = 'feat/ind2vec.pkl'
 
 
-def link_fit(texts, labels, path_label2word):
-    label2word = dict()
-    ind = 0
+def link_fit(texts, labels, path_word2sent):
+    word2sent = dict()
+    sent_ind = 0
     for text, label in zip(texts, labels):
-        if label not in label2word:
-            label2word[label] = dict()
         for word in text:
-            if word not in label2word[label]:
-                label2word[label][word] = set()
-            label2word[label][word].add(ind)
-        ind = ind + 1
-    with open(path_label2word, 'wb') as f:
-        pk.dump(label2word, f)
+            if word not in word2sent:
+                word2sent[word] = set()
+            word2sent[word].add((sent_ind, label))
+        sent_ind = sent_ind + 1
+    with open(path_word2sent, 'wb') as f:
+        pk.dump(word2sent, f)
     if __name__ == '__main__':
-        print(label2word)
+        print(word2sent)
 
 
 def freq_fit(texts, labels, path_tfidf, path_ind2vec):
@@ -57,7 +55,7 @@ def freq_fit(texts, labels, path_tfidf, path_ind2vec):
 def fit(path_train):
     texts = flat_read(path_train, 'text')
     labels = flat_read(path_train, 'label')
-    link_fit(texts, labels, path_label2word)
+    link_fit(texts, labels, path_word2sent)
     freq_fit(texts, labels, path_tfidf, path_ind2vec)
 
 
