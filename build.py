@@ -1,16 +1,11 @@
 import pickle as pk
 
-import jieba
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from util import flat_read
 
 
 min_freq = 1
-
-path_cut_word = 'dict/cut_word.txt'
-jieba.load_userdict(path_cut_word)
 
 path_word_sent = 'feat/word_sent.pkl'
 path_tfidf = 'model/tfidf.pkl'
@@ -37,12 +32,11 @@ def freq_fit(texts, labels, path_tfidf, path_sent_vec):
     for text, label in zip(texts, labels):
         if label not in label2text:
             label2text[label] = list()
-        cut_text = ' '.join(jieba.cut(text))
-        label2text[label].append(cut_text)
-    cut_docs = list()
-    for cut_texts in label2text.values():
-        cut_docs.append(' '.join(cut_texts))
-    model = TfidfVectorizer(token_pattern='\w+', min_df=min_freq)
+        label2text[label].append(text)
+    docs = list()
+    for texts in label2text.values():
+        docs.append(''.join(texts))
+    model = TfidfVectorizer(token_pattern='\w', min_df=min_freq)
     model.fit(texts)
     sent_vecs = model.transform(texts).toarray()
     with open(path_tfidf, 'wb') as f:
