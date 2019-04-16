@@ -1,7 +1,5 @@
 import pickle as pk
 
-import re
-
 import numpy as np
 from scipy.spatial.distance import cosine as cos_dist
 
@@ -9,7 +7,9 @@ from pypinyin import lazy_pinyin as pinyin
 
 from nltk.metrics import edit_distance as edit_dist
 
-from util import load_word_re, load_type_re, load_poly, flat_read, map_item
+from preprocess import clean
+
+from util import load_poly, flat_read, map_item
 
 
 def find(word, cands, word_dict):
@@ -67,13 +67,9 @@ def cos_predict(text, match_sents, match_labels, max_cand, thre):
 
 
 path_train = 'data/train.csv'
-path_type_dir = 'dict/word_type'
-path_stop_word = 'dict/stop_word.txt'
 path_homo = 'dict/homo.csv'
 path_syno = 'dict/syno.csv'
 texts = flat_read(path_train, 'text')
-word_type_re = load_type_re(path_type_dir)
-stop_word_re = load_word_re(path_stop_word)
 homo_dict = load_poly(path_homo)
 syno_dict = load_poly(path_syno)
 
@@ -92,9 +88,7 @@ funcs = {'edit': edit_predict,
 
 
 def predict(text, name):
-    text = re.sub(stop_word_re, '', text.strip())
-    for word_type, word_re in word_type_re.items():
-        text = re.sub(word_re, word_type, text)
+    text = clean(text)
     cands = set()
     for word in text:
         if word not in cands:
