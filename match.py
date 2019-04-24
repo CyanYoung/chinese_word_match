@@ -18,6 +18,23 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
+def sort(dists, match_texts, match_labels, max_cand, thre):
+    dists = np.array(dists)
+    bound = min(len(dists), max_cand)
+    min_dists = sorted(dists)[:bound]
+    min_inds = np.argsort(dists)[:bound]
+    min_preds = [match_labels[ind] for ind in min_inds]
+    if __name__ == '__main__':
+        formats = list()
+        for pred, rate, ind in zip(min_preds, min_dists, min_inds):
+            formats.append('{} {:.3f} {}'.format(pred, rate, match_texts[ind]))
+        return ', '.join(formats)
+    if min_dists[0] < thre:
+        return min_preds[0]
+    else:
+        return '其它'
+
+
 def edit_predict(text, match_sents, match_labels, max_cand, thre):
     phon = ''.join(pinyin(text))
     match_phons = list()
@@ -27,43 +44,17 @@ def edit_predict(text, match_sents, match_labels, max_cand, thre):
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
         rates.append(dist / len(phon))
-    rates = np.array(rates)
-    bound = min(len(rates), max_cand)
-    min_rates = sorted(rates)[:bound]
-    min_inds = np.argsort(rates)[:bound]
-    min_preds = [match_labels[ind] for ind in min_inds]
-    if __name__ == '__main__':
-        formats = list()
-        for pred, rate, ind in zip(min_preds, min_rates, min_inds):
-            formats.append('{} {:.3f} {}'.format(pred, rate, match_phons[ind]))
-        return ', '.join(formats)
-    if min_rates[0] < thre:
-        return min_preds[0]
-    else:
-        return '其它'
+    return sort(rates, match_phons, match_labels, max_cand, thre)
 
 
 def cos_predict(text, match_sents, match_labels, max_cand, thre):
     vec = tfidf.transform([text]).toarray()
-    match_texts, sims = list(), list()
+    match_texts, dists = list(), list()
     for sent_ind, label in zip(match_sents, match_labels):
         match_texts.append(texts[sent_ind])
         match_vec = sent_vec[sent_ind]
-        sims.append(1 - cos_dist(vec, match_vec))
-    sims = np.array(sims)
-    bound = min(len(sims), max_cand)
-    max_sims = sorted(sims, reverse=True)[:bound]
-    max_inds = np.argsort(-sims)[:bound]
-    max_preds = [match_labels[ind] for ind in max_inds]
-    if __name__ == '__main__':
-        formats = list()
-        for pred, sim, ind in zip(max_preds, max_sims, max_inds):
-            formats.append('{} {:.3f} {}'.format(pred, sim, match_texts[ind]))
-        return ', '.join(formats)
-    if max_sims[0] > thre:
-        return max_preds[0]
-    else:
-        return '其它'
+        dists.append(cos_dist(vec, match_vec))
+    return sort(dists, match_texts, match_labels, max_cand, thre)
 
 
 path_train = 'data/train.csv'
