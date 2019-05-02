@@ -12,11 +12,12 @@ path_tfidf = 'model/tfidf.pkl'
 path_sent_vec = 'feat/sent_vec.pkl'
 
 
-def link_fit(texts, labels, path_word_sent):
+def link_fit(cut_texts, labels, path_word_sent):
     word_sents = dict()
     sent_ind = 0
-    for text, label in zip(texts, labels):
-        for word in text:
+    for cut_text, label in zip(cut_texts, labels):
+        words = cut_text.split()
+        for word in words:
             if word not in word_sents:
                 word_sents[word] = set()
             word_sents[word].add((sent_ind, label))
@@ -27,18 +28,18 @@ def link_fit(texts, labels, path_word_sent):
         print(word_sents)
 
 
-def freq_fit(texts, labels, path_tfidf, path_sent_vec):
+def freq_fit(cut_texts, labels, path_tfidf, path_sent_vec):
     label_texts = dict()
-    for text, label in zip(texts, labels):
+    for cut_text, label in zip(cut_texts, labels):
         if label not in label_texts:
             label_texts[label] = list()
-        label_texts[label].append(text)
-    docs = list()
+        label_texts[label].append(cut_text)
+    cut_docs = list()
     for doc_texts in label_texts.values():
-        docs.append(''.join(doc_texts))
-    model = TfidfVectorizer(token_pattern='\w', min_df=min_freq)
-    model.fit(docs)
-    sent_vecs = model.transform(texts).toarray()
+        cut_docs.append(' '.join(doc_texts))
+    model = TfidfVectorizer(token_pattern='\w+', min_df=min_freq)
+    model.fit(cut_docs)
+    sent_vecs = model.transform(cut_texts).toarray()
     with open(path_tfidf, 'wb') as f:
         pk.dump(model, f)
     with open(path_sent_vec, 'wb') as f:
@@ -46,10 +47,10 @@ def freq_fit(texts, labels, path_tfidf, path_sent_vec):
 
 
 def fit(path_train):
-    texts = flat_read(path_train, 'text')
+    cut_texts = flat_read(path_train, 'cut_text')
     labels = flat_read(path_train, 'label')
-    link_fit(texts, labels, path_word_sent)
-    freq_fit(texts, labels, path_tfidf, path_sent_vec)
+    link_fit(cut_texts, labels, path_word_sent)
+    freq_fit(cut_texts, labels, path_tfidf, path_sent_vec)
 
 
 if __name__ == '__main__':

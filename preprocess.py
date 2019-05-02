@@ -1,6 +1,7 @@
 import os
 
 import re
+import jieba
 
 from random import shuffle
 
@@ -12,13 +13,16 @@ path_type_dir = 'dict/word_type'
 stop_word_re = load_word_re(path_stop_word)
 word_type_re = load_type_re(path_type_dir)
 
+path_cut_word = 'dict/cut_word.txt'
+jieba.load_userdict(path_cut_word)
 
-def save(path, texts, labels):
-    head = 'text,label'
+
+def save(path, texts, cut_texts, labels):
+    head = 'text,cut_text,label'
     with open(path, 'w') as f:
         f.write(head + '\n')
-        for text, label in zip(texts, labels):
-            f.write(text + ',' + label + '\n')
+        for text, cut_text, label in zip(texts, cut_texts, labels):
+            f.write(text + ',' + cut_text + ',' + label + '\n')
 
 
 def clean(text):
@@ -30,7 +34,7 @@ def clean(text):
 
 def prepare(path_univ_dir, path_train, path_test):
     text_set = set()
-    texts, labels = list(), list()
+    texts, cut_texts, labels = list(), list(), list()
     files = os.listdir(path_univ_dir)
     for file in files:
         label = os.path.splitext(file)[0]
@@ -41,13 +45,15 @@ def prepare(path_univ_dir, path_train, path_test):
                 if text and text not in text_set:
                     text_set.add(text)
                     texts.append(text)
+                    cut_text = ' '.join(jieba.cut(text))
+                    cut_texts.append(cut_text)
                     labels.append(label)
-    texts_labels = list(zip(texts, labels))
+    texts_labels = list(zip(texts, cut_texts, labels))
     shuffle(texts_labels)
-    texts, labels = zip(*texts_labels)
+    texts, cut_texts, labels = zip(*texts_labels)
     bound = int(len(texts) * 0.9)
-    save(path_train, texts[:bound], labels[:bound])
-    save(path_test, texts[bound:], labels[bound:])
+    save(path_train, texts[:bound], cut_texts[:bound], labels[:bound])
+    save(path_test, texts[:bound], cut_texts[bound:], labels[bound:])
 
 
 if __name__ == '__main__':
