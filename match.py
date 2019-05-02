@@ -1,5 +1,7 @@
 import pickle as pk
 
+import jieba
+
 import numpy as np
 from scipy.spatial.distance import cosine as cos_dist
 
@@ -9,7 +11,7 @@ from nltk.metrics import edit_distance as edit_dist
 
 from preprocess import clean
 
-from util import load_poly, flat_read, map_item
+from util import load_poly, flat_read
 
 
 def find(word, cands, word_dict):
@@ -47,8 +49,8 @@ def edit_predict(text, match_sents, match_labels, max_cand, thre):
     return sort(rates, match_phons, match_labels, max_cand, thre)
 
 
-def cos_predict(text, match_sents, match_labels, max_cand, thre):
-    vec = tfidf.transform([text]).toarray()
+def cos_predict(cut_text, match_sents, match_labels, max_cand, thre):
+    vec = tfidf.transform([cut_text]).toarray()
     match_texts, dists = list(), list()
     for sent_ind, label in zip(match_sents, match_labels):
         match_texts.append(texts[sent_ind])
@@ -56,6 +58,9 @@ def cos_predict(text, match_sents, match_labels, max_cand, thre):
         dists.append(cos_dist(vec, match_vec))
     return sort(dists, match_texts, match_labels, max_cand, thre)
 
+
+path_cut_word = 'dict/cut_word.txt'
+jieba.load_userdict(path_cut_word)
 
 path_train = 'data/train.csv'
 path_homo = 'dict/homo.csv'
@@ -80,8 +85,10 @@ funcs = {'edit': edit_predict,
 
 def predict(text, name):
     text = clean(text)
+    cut_text = ' '.join(jieba.cut(text))
+    words = cut_text.split()
     cands = set()
-    for word in text:
+    for word in words:
         if word not in cands:
             cands.add(word)
             find(word, cands, homo_dict)
@@ -97,8 +104,10 @@ def predict(text, name):
                     match_sents.append(sent_ind)
                     match_labels.append(label)
     if match_sents:
-        func = map_item(name, funcs)
-        return func(text, match_sents, match_labels, max_cand=5, thre=0.5)
+        if name == 'edit':
+            return edit_predict(text, match_sents, match_labels, max_cand=5, thre=0.8)
+        else:
+            return cos_predict(cut_text, match_sents, match_labels, max_cand=5, thre=0.8)
     else:
         return '其它'
 
