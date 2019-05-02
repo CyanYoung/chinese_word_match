@@ -79,9 +79,6 @@ with open(path_tfidf, 'rb') as f:
 with open(path_sent_vec, 'rb') as f:
     sent_vec = pk.load(f)
 
-funcs = {'edit': edit_predict,
-         'cos': cos_predict}
-
 
 def predict(text, name):
     text = clean(text)
