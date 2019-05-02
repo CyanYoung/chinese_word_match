@@ -1,4 +1,4 @@
-## Chinese Intent Match 2018-7
+## Chinese Word Match 2018-7
 
 #### 1.preprocess
 
