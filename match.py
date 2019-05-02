@@ -20,9 +20,9 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def sort(dists, match_texts, match_labels, max_cand, thre):
+def sort(dists, match_texts, match_labels, cand, thre):
     dists = np.array(dists)
-    bound = min(len(dists), max_cand)
+    bound = min(len(dists), cand)
     min_dists = sorted(dists)[:bound]
     min_inds = np.argsort(dists)[:bound]
     min_preds = [match_labels[ind] for ind in min_inds]
@@ -37,7 +37,7 @@ def sort(dists, match_texts, match_labels, max_cand, thre):
         return '其它'
 
 
-def edit_predict(text, match_sents, match_labels, max_cand, thre):
+def edit_predict(text, match_sents, match_labels, cand, thre):
     phon = ''.join(pinyin(text))
     match_phons = list()
     for sent_ind in match_sents:
@@ -46,17 +46,17 @@ def edit_predict(text, match_sents, match_labels, max_cand, thre):
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
         rates.append(dist / len(phon))
-    return sort(rates, match_phons, match_labels, max_cand, thre)
+    return sort(rates, match_phons, match_labels, cand, thre)
 
 
-def cos_predict(cut_text, match_sents, match_labels, max_cand, thre):
+def cos_predict(cut_text, match_sents, match_labels, cand, thre):
     vec = tfidf.transform([cut_text]).toarray()
     match_texts, dists = list(), list()
     for sent_ind, label in zip(match_sents, match_labels):
         match_texts.append(texts[sent_ind])
         match_vec = sent_vec[sent_ind]
         dists.append(cos_dist(vec, match_vec))
-    return sort(dists, match_texts, match_labels, max_cand, thre)
+    return sort(dists, match_texts, match_labels, cand, thre)
 
 
 path_cut_word = 'dict/cut_word.txt'
@@ -102,9 +102,9 @@ def predict(text, name):
                     match_labels.append(label)
     if match_sents:
         if name == 'edit':
-            return edit_predict(text, match_sents, match_labels, max_cand=5, thre=0.8)
+            return edit_predict(text, match_sents, match_labels, cand=5, thre=0.8)
         else:
-            return cos_predict(cut_text, match_sents, match_labels, max_cand=5, thre=0.8)
+            return cos_predict(cut_text, match_sents, match_labels, cand=5, thre=0.8)
     else:
         return '其它'
 
