@@ -41,7 +41,7 @@ def edit_predict(text, match_sents, match_labels, max_cand, thre):
     phon = ''.join(pinyin(text))
     match_phons = list()
     for sent_ind in match_sents:
-        match_phons.append(''.join(pinyin(texts[sent_ind])))
+        match_phons.append(''.join(pinyin(cut_texts[sent_ind])))
     rates = list()
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
@@ -53,7 +53,7 @@ def cos_predict(cut_text, match_sents, match_labels, max_cand, thre):
     vec = tfidf.transform([cut_text]).toarray()
     match_texts, dists = list(), list()
     for sent_ind, label in zip(match_sents, match_labels):
-        match_texts.append(texts[sent_ind])
+        match_texts.append(cut_texts[sent_ind])
         match_vec = sent_vec[sent_ind]
         dists.append(cos_dist(vec, match_vec))
     return sort(dists, match_texts, match_labels, max_cand, thre)
@@ -65,7 +65,7 @@ jieba.load_userdict(path_cut_word)
 path_train = 'data/train.csv'
 path_homo = 'dict/homo.csv'
 path_syno = 'dict/syno.csv'
-texts = flat_read(path_train, 'text')
+cut_texts = flat_read(path_train, 'cut_text')
 homo_dict = load_poly(path_homo)
 syno_dict = load_poly(path_syno)
 
