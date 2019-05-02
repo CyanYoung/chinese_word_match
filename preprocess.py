@@ -17,19 +17,27 @@ path_cut_word = 'dict/cut_word.txt'
 jieba.load_userdict(path_cut_word)
 
 
-def save(path, texts, cut_texts, labels):
-    head = 'text,cut_text,label'
-    with open(path, 'w') as f:
-        f.write(head + '\n')
-        for text, cut_text, label in zip(texts, cut_texts, labels):
-            f.write(text + ',' + cut_text + ',' + label + '\n')
-
-
 def clean(text):
     text = re.sub(stop_word_re, '', text)
     for word_type, word_re in word_type_re.items():
         text = re.sub(word_re, word_type, text)
     return text
+
+
+def save_train(path, cut_texts, labels):
+    head = 'cut_text,label'
+    with open(path, 'w') as f:
+        f.write(head + '\n')
+        for cut_text, label in zip(cut_texts, labels):
+            f.write(cut_text + ',' + label + '\n')
+
+
+def save_test(path, texts, labels):
+    head = 'text,label'
+    with open(path, 'w') as f:
+        f.write(head + '\n')
+        for text, label in zip(texts, labels):
+            f.write(text + ',' + label + '\n')
 
 
 def prepare(path_univ_dir, path_train, path_test):
@@ -52,8 +60,8 @@ def prepare(path_univ_dir, path_train, path_test):
     shuffle(texts_labels)
     texts, cut_texts, labels = zip(*texts_labels)
     bound = int(len(texts) * 0.9)
-    save(path_train, texts[:bound], cut_texts[:bound], labels[:bound])
-    save(path_test, texts[bound:], cut_texts[bound:], labels[bound:])
+    save_train(path_train, cut_texts[:bound], labels[:bound])
+    save_test(path_test, texts[bound:], labels[bound:])
 
 
 if __name__ == '__main__':
