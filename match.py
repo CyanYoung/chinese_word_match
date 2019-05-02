@@ -20,7 +20,7 @@ def find(word, cands, word_dict):
             cands.add(cand)
 
 
-def sort(dists, match_texts, match_labels, cand, thre):
+def sort(dists, match_texts, match_labels, thre, cand):
     dists = np.array(dists)
     bound = min(len(dists), cand)
     min_dists = sorted(dists)[:bound]
@@ -37,7 +37,7 @@ def sort(dists, match_texts, match_labels, cand, thre):
         return '其它'
 
 
-def edit_predict(text, match_sents, match_labels, cand, thre):
+def edit_predict(text, match_sents, match_labels, thre):
     phon = ''.join(pinyin(text))
     match_phons = list()
     for sent_ind in match_sents:
@@ -46,17 +46,17 @@ def edit_predict(text, match_sents, match_labels, cand, thre):
     for match_phon in match_phons:
         dist = edit_dist(phon, match_phon)
         rates.append(dist / len(phon))
-    return sort(rates, match_phons, match_labels, cand, thre)
+    return sort(rates, match_phons, match_labels, thre, cand=5)
 
 
-def cos_predict(cut_text, match_sents, match_labels, cand, thre):
+def cos_predict(cut_text, match_sents, match_labels, thre):
     vec = tfidf.transform([cut_text]).toarray()
     match_texts, dists = list(), list()
     for sent_ind, label in zip(match_sents, match_labels):
         match_texts.append(texts[sent_ind])
         match_vec = sent_vec[sent_ind]
         dists.append(cos_dist(vec, match_vec))
-    return sort(dists, match_texts, match_labels, cand, thre)
+    return sort(dists, match_texts, match_labels, thre, cand=5)
 
 
 path_cut_word = 'dict/cut_word.txt'
@@ -80,7 +80,7 @@ with open(path_sent_vec, 'rb') as f:
     sent_vec = pk.load(f)
 
 
-def predict(text, name, cand, thre):
+def predict(text, name, thre):
     text = clean(text)
     cut_text = ' '.join(jieba.cut(text))
     words = cut_text.split()
@@ -102,9 +102,9 @@ def predict(text, name, cand, thre):
                     match_labels.append(label)
     if match_sents:
         if name == 'edit':
-            return edit_predict(text, match_sents, match_labels, cand, thre)
+            return edit_predict(text, match_sents, match_labels, thre)
         else:
-            return cos_predict(cut_text, match_sents, match_labels, cand, thre)
+            return cos_predict(cut_text, match_sents, match_labels, thre)
     else:
         return '其它'
 
@@ -112,5 +112,5 @@ def predict(text, name, cand, thre):
 if __name__ == '__main__':
     while True:
         text = input('text: ')
-        print('edit: %s' % predict(text, 'edit', cand=5, thre=0.5))
-        print('cos:  %s' % predict(text, 'cos', cand=5, thre=0.5))
+        print('edit: %s' % predict(text, 'edit', thre=0.5))
+        print('cos:  %s' % predict(text, 'cos', thre=0.5))
