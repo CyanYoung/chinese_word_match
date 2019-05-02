@@ -80,7 +80,7 @@ with open(path_sent_vec, 'rb') as f:
     sent_vec = pk.load(f)
 
 
-def predict(text, name):
+def predict(text, name, cand, thre):
     text = clean(text)
     cut_text = ' '.join(jieba.cut(text))
     words = cut_text.split()
@@ -102,9 +102,9 @@ def predict(text, name):
                     match_labels.append(label)
     if match_sents:
         if name == 'edit':
-            return edit_predict(text, match_sents, match_labels, cand=5, thre=0.5)
+            return edit_predict(text, match_sents, match_labels, cand, thre)
         else:
-            return cos_predict(cut_text, match_sents, match_labels, cand=5, thre=0.5)
+            return cos_predict(cut_text, match_sents, match_labels, cand, thre)
     else:
         return '其它'
 
@@ -112,5 +112,5 @@ def predict(text, name):
 if __name__ == '__main__':
     while True:
         text = input('text: ')
-        print('edit: %s' % predict(text, 'edit'))
-        print('cos:  %s' % predict(text, 'cos'))
+        print('edit: %s' % predict(text, 'edit', cand=5, thre=0.5))
+        print('cos:  %s' % predict(text, 'cos', cand=5, thre=0.5))
