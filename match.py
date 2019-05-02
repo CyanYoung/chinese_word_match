@@ -102,9 +102,9 @@ def predict(text, name):
                     match_labels.append(label)
     if match_sents:
         if name == 'edit':
-            return edit_predict(text, match_sents, match_labels, cand=5, thre=0.8)
+            return edit_predict(text, match_sents, match_labels, cand=5, thre=0.2)
         else:
-            return cos_predict(cut_text, match_sents, match_labels, cand=5, thre=0.8)
+            return cos_predict(cut_text, match_sents, match_labels, cand=5, thre=0.2)
     else:
         return '其它'
 
