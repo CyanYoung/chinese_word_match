@@ -52,8 +52,8 @@ def prepare(path_univ_dir, path_train, path_test):
     shuffle(texts_labels)
     texts, cut_texts, labels = zip(*texts_labels)
     bound = int(len(texts) * 0.9)
-    save(path_train, texts, cut_texts[:bound], labels[:bound])
-    save(path_test, texts, cut_texts[bound:], labels[bound:])
+    save(path_train, texts[:bound], cut_texts[:bound], labels[:bound])
+    save(path_test, texts[bound:], cut_texts[bound:], labels[bound:])
 
 
 if __name__ == '__main__':
