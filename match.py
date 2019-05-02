@@ -112,5 +112,5 @@ def predict(text, name, thre):
 if __name__ == '__main__':
     while True:
         text = input('text: ')
-        print('edit: %s' % predict(text, 'edit', thre=0.5))
-        print('cos:  %s' % predict(text, 'cos', thre=0.5))
+        print('edit: %s' % predict(text, 'edit', thre=0.8))
+        print('cos:  %s' % predict(text, 'cos', thre=0.8))
