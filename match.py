@@ -14,6 +14,27 @@ from preprocess import clean
 from util import load_poly, flat_read
 
 
+path_cut_word = 'dict/cut_word.txt'
+jieba.load_userdict(path_cut_word)
+
+path_train = 'data/train.csv'
+path_homo = 'dict/homo.csv'
+path_syno = 'dict/syno.csv'
+texts = flat_read(path_train, 'text')
+homo_dict = load_poly(path_homo)
+syno_dict = load_poly(path_syno)
+
+path_word_sent = 'feat/word_sent.pkl'
+path_tfidf = 'model/tfidf.pkl'
+path_sent_vec = 'feat/sent_vec.pkl'
+with open(path_word_sent, 'rb') as f:
+    word_sent = pk.load(f)
+with open(path_tfidf, 'rb') as f:
+    tfidf = pk.load(f)
+with open(path_sent_vec, 'rb') as f:
+    sent_vec = pk.load(f)
+
+
 def find(word, cands, word_dict):
     if word in word_dict:
         for cand in word_dict[word]:
@@ -57,27 +78,6 @@ def cos_predict(cut_text, match_sents, match_labels, thre):
         match_vec = sent_vec[sent_ind]
         dists.append(cos_dist(vec, match_vec))
     return sort(dists, match_texts, match_labels, thre, cand=5)
-
-
-path_cut_word = 'dict/cut_word.txt'
-jieba.load_userdict(path_cut_word)
-
-path_train = 'data/train.csv'
-path_homo = 'dict/homo.csv'
-path_syno = 'dict/syno.csv'
-texts = flat_read(path_train, 'text')
-homo_dict = load_poly(path_homo)
-syno_dict = load_poly(path_syno)
-
-path_word_sent = 'feat/word_sent.pkl'
-path_tfidf = 'model/tfidf.pkl'
-path_sent_vec = 'feat/sent_vec.pkl'
-with open(path_word_sent, 'rb') as f:
-    word_sent = pk.load(f)
-with open(path_tfidf, 'rb') as f:
-    tfidf = pk.load(f)
-with open(path_sent_vec, 'rb') as f:
-    sent_vec = pk.load(f)
 
 
 def predict(text, name, thre):
