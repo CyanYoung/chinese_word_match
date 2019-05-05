@@ -17,13 +17,6 @@ path_cut_word = 'dict/cut_word.txt'
 jieba.load_userdict(path_cut_word)
 
 
-def clean(text):
-    text = re.sub(stop_word_re, '', text)
-    for word_type, word_re in word_type_re.items():
-        text = re.sub(word_re, word_type, text)
-    return text
-
-
 def save_train(path, texts, cut_texts, labels):
     head = 'text,cut_text,label'
     with open(path, 'w') as f:
@@ -38,6 +31,13 @@ def save_test(path, texts, labels):
         f.write(head + '\n')
         for text, label in zip(texts, labels):
             f.write(text + ',' + label + '\n')
+
+
+def clean(text):
+    text = re.sub(stop_word_re, '', text)
+    for word_type, word_re in word_type_re.items():
+        text = re.sub(word_re, word_type, text)
+    return text
 
 
 def prepare(path_univ_dir, path_train, path_test):
