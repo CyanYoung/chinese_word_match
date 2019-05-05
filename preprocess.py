@@ -24,12 +24,12 @@ def clean(text):
     return text
 
 
-def save_train(path, cut_texts, labels):
-    head = 'cut_text,label'
+def save_train(path, texts, cut_texts, labels):
+    head = 'text,cut_text,label'
     with open(path, 'w') as f:
         f.write(head + '\n')
-        for cut_text, label in zip(cut_texts, labels):
-            f.write(cut_text + ',' + label + '\n')
+        for text, cut_text, label in zip(texts, cut_texts, labels):
+            f.write(text + ',' + cut_text + ',' + label + '\n')
 
 
 def save_test(path, texts, labels):
@@ -60,7 +60,7 @@ def prepare(path_univ_dir, path_train, path_test):
     shuffle(texts_labels)
     texts, cut_texts, labels = zip(*texts_labels)
     bound = int(len(texts) * 0.9)
-    save_train(path_train, cut_texts[:bound], labels[:bound])
+    save_train(path_train, texts[:bound], cut_texts[:bound], labels[:bound])
     save_test(path_test, texts[bound:], labels[bound:])
 
 
