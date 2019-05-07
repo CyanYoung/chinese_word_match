@@ -69,4 +69,3 @@ if __name__ == '__main__':
     path_train = 'data/train.csv'
     path_test = 'data/test.csv'
     prepare(path_univ_dir, path_train, path_test)
-
