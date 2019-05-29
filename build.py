@@ -1,6 +1,8 @@
 import pickle as pk
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
+
+from sklearn.decomposition import TruncatedSVD
 
 from util import flat_read
 
@@ -8,7 +10,8 @@ from util import flat_read
 min_freq = 1
 
 path_word_sent = 'feat/word_sent.pkl'
-path_tfidf = 'model/tfidf.pkl'
+path_bow = 'model/bow.pkl'
+path_svd = 'model/svd.pkl'
 path_sent_vec = 'feat/sent_vec.pkl'
 
 
@@ -28,20 +31,17 @@ def link_fit(cut_texts, labels, path_word_sent):
         print(word_sents)
 
 
-def freq_fit(cut_texts, labels, path_tfidf, path_sent_vec):
-    label_texts = dict()
-    for cut_text, label in zip(cut_texts, labels):
-        if label not in label_texts:
-            label_texts[label] = list()
-        label_texts[label].append(cut_text)
-    cut_docs = list()
-    for doc_texts in label_texts.values():
-        cut_docs.append(' '.join(doc_texts))
-    model = TfidfVectorizer(token_pattern='\w+', min_df=min_freq)
-    model.fit(cut_docs)
-    sent_vecs = model.transform(cut_texts).toarray()
-    with open(path_tfidf, 'wb') as f:
-        pk.dump(model, f)
+def freq_fit(cut_texts, path_bow, path_svd, path_sent_vec):
+    bow = CountVectorizer(token_pattern='\w+', min_df=min_freq)
+    bow.fit(cut_texts)
+    bow_sents = bow.transform(cut_texts)
+    svd = TruncatedSVD(n_components=200, n_iter=10)
+    svd.fit(bow_sents)
+    sent_vecs = svd.transform(bow_sents)
+    with open(path_bow, 'wb') as f:
+        pk.dump(bow, f)
+    with open(path_svd, 'wb') as f:
+        pk.dump(svd, f)
     with open(path_sent_vec, 'wb') as f:
         pk.dump(sent_vecs, f)
 
@@ -50,7 +50,7 @@ def fit(path_train):
     cut_texts = flat_read(path_train, 'cut_text')
     labels = flat_read(path_train, 'label')
     link_fit(cut_texts, labels, path_word_sent)
-    freq_fit(cut_texts, labels, path_tfidf, path_sent_vec)
+    freq_fit(cut_texts, path_bow, path_svd, path_sent_vec)
 
 
 if __name__ == '__main__':

@@ -25,12 +25,15 @@ homo_dict = load_poly(path_homo)
 syno_dict = load_poly(path_syno)
 
 path_word_sent = 'feat/word_sent.pkl'
-path_tfidf = 'model/tfidf.pkl'
+path_bow = 'model/bow.pkl'
+path_svd = 'model/svd.pkl'
 path_sent_vec = 'feat/sent_vec.pkl'
 with open(path_word_sent, 'rb') as f:
     word_sent = pk.load(f)
-with open(path_tfidf, 'rb') as f:
-    tfidf = pk.load(f)
+with open(path_bow, 'rb') as f:
+    bow = pk.load(f)
+with open(path_svd, 'rb') as f:
+    svd = pk.load(f)
 with open(path_sent_vec, 'rb') as f:
     sent_vec = pk.load(f)
 
@@ -71,7 +74,8 @@ def edit_predict(text, match_sents, match_labels, thre):
 
 
 def cos_predict(cut_text, match_sents, match_labels, thre):
-    vec = tfidf.transform([cut_text]).toarray()
+    vec = bow.transform([cut_text])
+    vec = svd.transform(vec)
     match_texts, dists = list(), list()
     for sent_ind, label in zip(match_sents, match_labels):
         match_texts.append(texts[sent_ind])
